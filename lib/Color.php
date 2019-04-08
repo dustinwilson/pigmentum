@@ -9,8 +9,6 @@ class Color {
     protected $_rgb;
     protected $_xyz;
 
-    protected $_rgbWorkingSpace;
-
     protected static $cache = [];
 
     const BRADFORD = [
@@ -32,7 +30,7 @@ class Color {
     const WORKING_SPACE_RGB_ADOBERGB1998 = '\dW\Pigmentum\WorkingSpace\RGB\AdobeRGB1998';
 
     private function __construct(float $x, float $y, float $z, array $props = []) {
-        $this->_xyz = [ 'x' => $x, 'y' => $y, 'z' => $z ];
+        $this->_xyz = new ColorSpace\XYZ($x, $y, $z);
 
         if ($props !== []) {
             foreach ($props as $key => $value) {
@@ -46,7 +44,7 @@ class Color {
         return new self($x, $y, $z);
     }
 
-    static function withRGB(int $r, int $g, int $b, string $workingSpace = self::WORKING_SPACE_RGB_sRGB) {
+    static function withRGB(int $r, int $g, int $b, string $workingSpace = self::WORKING_SPACE_RGB_sRGB): Color {
         $vector = [
             $r / 255,
             $g / 255,
@@ -57,8 +55,7 @@ class Color {
         $xyz = ($workingSpace::getXYZMatrix())->vectorMultiply($vector);
 
         $color = new self($xyz[0], $xyz[1], $xyz[2], [
-            'rgb' => [ 'r' => $r, 'g' => $g, 'b' => $b ],
-            'rgbWorkingSpace' => $workingSpace
+            'rgb' => new ColorSpace\RGB($r, $g, $b, $workingSpace)
         ]);
 
         if ($workingSpace::illuminant !== self::ILLUMINANT_D50) {
@@ -68,56 +65,52 @@ class Color {
         return $color;
     }
 
-    public function toRGB(string $workingSpace = self::WORKING_SPACE_RGB_sRGB): array {
+    public function toRGB(string $workingSpace = self::WORKING_SPACE_RGB_sRGB): ColorSpace\RGB {
         if ($workingSpace::illuminant !== self::ILLUMINANT_D50) {
-            $xyz = (new self($this->_xyz['x'], $this->_xyz['y'], $this->_xyz['z']))->chromaticAdaptation(self::ILLUMINANT_D65, self::ILLUMINANT_D50)->xyz;
+            $xyz = (new self($this->_xyz->x, $this->_xyz->y, $this->_xyz->z))->chromaticAdaptation(self::ILLUMINANT_D65, self::ILLUMINANT_D50)->xyz;
         } else {
             $xyz = $this->_xyz;
         }
 
         $matrix = $workingSpace::getXYZMatrix()->inverse();
-        $uncompandedVector = $matrix->vectorMultiply(new Vector([ $xyz['x'], $xyz['y'], $xyz['z'] ]));
+        $uncompandedVector = $matrix->vectorMultiply(new Vector([ $xyz->x, $xyz->y, $xyz->z ]));
 
-        $this->_rgb = [
+        $this->_rgb = new ColorSpace\RGB(
             (int)round($workingSpace::companding($uncompandedVector[0]) * 255),
             (int)round($workingSpace::companding($uncompandedVector[1]) * 255),
-            (int)round($workingSpace::companding($uncompandedVector[2]) * 255)
-        ];
-
-        $this->_rgbWorkingSpace = $workingSpace;
+            (int)round($workingSpace::companding($uncompandedVector[2]) * 255),
+            $workingSpace
+        );
 
         return $this->_rgb;
     }
 
-    public function toLMS(): array {
+    public function toLMS(): ColorSpace\LMS {
         if (!is_null($this->_lms)) {
             return $this->_lms;
         }
 
         $xyz = $this->_xyz;
-        $cacheKey = "x{$xyz['x']}_y{$xyz['y']}_z{$xyz['z']}";
+        $cacheKey = "x{$xyz->x}_y{$xyz->y}_z{$xyz->z}";
 
         if (isset(self::$cache[$cacheKey]) && isset(self::$cache[$cacheKey]['lms'])) {
             return self::$cache[$cacheKey]['lms'];
         }
 
+        $xyz = [ $xyz->x, $xyz->y, $xyz->z ];
         $result = array_map(function($m) use($xyz) {
             $out = 0;
             $count = 0;
-            foreach ($xyz as $c) {
-                $out += $m[$count++] * $c;
+            foreach ($xyz as $key => $value) {
+                $out += $m[$key] * $value;
             }
 
             return $out;
         }, self::BRADFORD);
 
-        $result = [
-            'rho' => $result[0],
-            'gamma' => $result[1],
-            'beta' => $result[2]
-        ];
+        $result = new ColorSpace\LMS($result[0], $result[1], $result[2]);
 
-        self::$cache["x{$xyz['x']}_y{$xyz['y']}_z{$xyz['z']}"]['lms'] = $result;
+        self::$cache["x{$xyz[0]}_y{$xyz[1]}_z{$xyz[2]}"]['lms'] = $result;
         $this->_lms = $result;
 
         return $result;
@@ -129,20 +122,16 @@ class Color {
         $old = (self::withXYZ($old[0], $old[1], $old[2]))->toLMS();
 
         $mir = new Matrix([
-            [ $new['rho'] / $old['rho'], 0, 0 ],
-            [ 0, $new['gamma'] / $old['gamma'], 0 ],
-            [ 0, 0, $new['beta'] / $old['beta']]
+            [ $new->rho / $old->rho, 0, 0 ],
+            [ 0, $new->gamma / $old->gamma, 0 ],
+            [ 0, 0, $new->beta / $old->beta]
         ]);
 
         $m1 = (new Matrix(self::INVERSE_BRADFORD))->multiply($mir);
         $m2 = $m1->multiply(new Matrix(self::BRADFORD));
-        $xyz = $m2->multiply(new Matrix([ [$this->_xyz['x']], [$this->_xyz['y']], [$this->_xyz['z']] ]));
+        $xyz = $m2->multiply(new Matrix([ [$this->_xyz->x], [$this->_xyz->y], [$this->_xyz->z] ]));
 
-        $this->_xyz = [
-            'x' => $xyz[0][0],
-            'y' => $xyz[1][0],
-            'z' => $xyz[2][0]
-        ];
+        $this->_xyz = new ColorSpace\XYZ($xyz[0][0], $xyz[1][0], $xyz[2][0]);
 
         return $this;
     }
