@@ -1,0 +1,21 @@
+{
+    "name": "dw/pigmentum",
+    "description": "Library for manipulating and converting between CIE Color spaces",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dustin Wilson",
+            "email": "dustin@dustinwilson.com"
+        }
+    ],
+    "require": {
+        "php": "^7.0",
+        "markrogoyski/math-php": "^0.49.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "dW\\Pigmentum\\": "lib/"
+        }
+    }
+}
