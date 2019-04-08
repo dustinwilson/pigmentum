@@ -11,18 +11,6 @@ class Color {
 
     protected static $cache = [];
 
-    const BRADFORD = [
-        [ 0.8951000, 0.2664000, -0.1614000 ],
-        [ -0.7502000, 1.7135000, 0.0367000 ],
-        [ 0.0389000, -0.0685000, 1.0296000 ]
-    ];
-
-    const INVERSE_BRADFORD = [
-        [ 0.9869929, -0.1470543, 0.1599627 ],
-        [ 0.4323053, 0.5183603, 0.0492912 ],
-        [ -0.0085287, 0.0400428, 0.9684867 ]
-    ];
-
     const ILLUMINANT_D65 = [ 0.95047, 1, 1.08883 ];
     const ILLUMINANT_D50 = [ 0.96422, 1, 0.82521 ];
 
@@ -59,7 +47,7 @@ class Color {
         ]);
 
         if ($workingSpace::illuminant !== self::ILLUMINANT_D50) {
-            $color->chromaticAdaptation(self::ILLUMINANT_D50, self::ILLUMINANT_D65);
+            $color->xyz->chromaticAdaptation(self::ILLUMINANT_D50, self::ILLUMINANT_D65);
         }
 
         return $color;
@@ -67,7 +55,7 @@ class Color {
 
     public function toRGB(string $workingSpace = self::WORKING_SPACE_RGB_sRGB): ColorSpace\RGB {
         if ($workingSpace::illuminant !== self::ILLUMINANT_D50) {
-            $xyz = (new self($this->_xyz->x, $this->_xyz->y, $this->_xyz->z))->chromaticAdaptation(self::ILLUMINANT_D65, self::ILLUMINANT_D50)->xyz;
+            $xyz = (new ColorSpace\XYZ($this->_xyz->x, $this->_xyz->y, $this->_xyz->z))->chromaticAdaptation(self::ILLUMINANT_D65, self::ILLUMINANT_D50);
         } else {
             $xyz = $this->_xyz;
         }
@@ -106,7 +94,7 @@ class Color {
             }
 
             return $out;
-        }, self::BRADFORD);
+        }, ColorSpace\XYZ::BRADFORD);
 
         $result = new ColorSpace\LMS($result[0], $result[1], $result[2]);
 
@@ -114,26 +102,6 @@ class Color {
         $this->_lms = $result;
 
         return $result;
-    }
-
-    // Bradford method of adaptation
-    protected function chromaticAdaptation(array $new, array $old): Color {
-        $new = (self::withXYZ($new[0], $new[1], $new[2]))->toLMS();
-        $old = (self::withXYZ($old[0], $old[1], $old[2]))->toLMS();
-
-        $mir = new Matrix([
-            [ $new->rho / $old->rho, 0, 0 ],
-            [ 0, $new->gamma / $old->gamma, 0 ],
-            [ 0, 0, $new->beta / $old->beta]
-        ]);
-
-        $m1 = (new Matrix(self::INVERSE_BRADFORD))->multiply($mir);
-        $m2 = $m1->multiply(new Matrix(self::BRADFORD));
-        $xyz = $m2->multiply(new Matrix([ [$this->_xyz->x], [$this->_xyz->y], [$this->_xyz->z] ]));
-
-        $this->_xyz = new ColorSpace\XYZ($xyz[0][0], $xyz[1][0], $xyz[2][0]);
-
-        return $this;
     }
 
     public function __get($property) {
