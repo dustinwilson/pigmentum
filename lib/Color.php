@@ -112,6 +112,10 @@ class Color {
     }
 
     static function withLab(float $L, float $a, float $b): Color {
+        $L = min(max($r, 0), 100);
+        $a = min(max($g, -128), 127);
+        $b = min(max($b, -128), 127);
+
         $fy = ($L + 16.0) / 116.0;
         $fx = 0.002 * $a + $fy;
         $fz = $fy - 0.005 * $b;
@@ -129,6 +133,10 @@ class Color {
     }
 
     private static function _withRGB(float $r, float $g, float $b, string $workingSpace = self::WORKING_SPACE_RGB_sRGB, string $hex = null, array $options = null): Color {
+        $r = min(max($r, 0), 255);
+        $g = min(max($g, 0), 255);
+        $b = min(max($b, 0), 255);
+
         $vector = new Vector([
             $workingSpace::inverseCompanding($r / 255),
             $workingSpace::inverseCompanding($g / 255),
@@ -153,6 +161,10 @@ class Color {
     }
 
     static function withXYZ(float $x, float $y, float $z): Color {
+        $x = min(max($x, 0), 1);
+        $y = min(max($y, 0), 1);
+        $z = min(max($z, 0), 1);
+
         return new self($x, $y, $z);
     }
 
