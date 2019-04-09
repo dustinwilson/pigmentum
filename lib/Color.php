@@ -50,13 +50,12 @@ class Color {
     }
 
     static function withRGB(int $r, int $g, int $b, string $workingSpace = self::WORKING_SPACE_RGB_sRGB): Color {
-        $vector = [
-            $r / 255,
-            $g / 255,
-            $b / 255
-        ];
+        $vector = new Vector([
+            $workingSpace::inverseCompanding($r / 255),
+            $workingSpace::inverseCompanding($g / 255),
+            $workingSpace::inverseCompanding($b / 255)
+        ]);
 
-        $vector = new Vector(array_map("$workingSpace::inverseCompanding", $vector));
         $xyz = ($workingSpace::getXYZMatrix())->vectorMultiply($vector);
 
         $color = new self($xyz[0], $xyz[1], $xyz[2], [
