@@ -5,6 +5,7 @@ use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
 class Color {
+    protected $_hsb;
     protected $_Lab;
     protected $_lms;
     protected $_rgb;
@@ -32,6 +33,84 @@ class Color {
         }
     }
 
+    static function withHex(string $hex, string $workingSpace = self::WORKING_SPACE_RGB_sRGB): Color {
+        if (strpos($hex, '#') !== 0) {
+            $hex = "#$hex";
+        }
+
+        if (strlen($hex) !== 7) {
+            throw new \Exception(sprintf('"%s" is an invalid 8-bit RGB hex string', $hex));
+        }
+
+        list($r, $g, $b) = sscanf($hex, "#%02x%02x%02x");
+        return self::_withRGB($r, $g, $b, $workingSpace, $hex);
+    }
+
+    static function withHSB(float $h, float $s, float $v, string $workingSpace = self::WORKING_SPACE_RGB_sRGB): Color {
+        $ss = $s / 100;
+        $vv = $v / 100 * 255;
+
+        if ($s == 0) {
+            $r = $g = $b = $vv;
+        } else {
+            if ($h === 360) {
+                $h = 0;
+            }
+
+            if ($h > 360) {
+                $h -= 360;
+            }
+
+            if ($h < 0) {
+                $h += 360;
+            }
+
+            $hh = $h / 60;
+
+            $i = floor($hh);
+            $f = $hh - $i;
+            $p = $vv * (1 - $ss);
+            $q = $vv * (1 - $ss * $f);
+            $t = $vv * (1 - $ss * (1 - $f));
+
+            switch ($i) {
+                case 0:
+                    $r = $vv;
+                    $g = $t;
+                    $b = $p;
+                break;
+                case 1:
+                    $r = $q;
+                    $g = $vv;
+                    $b = $p;
+                break;
+                case 2:
+                    $r = $p;
+                    $g = $vv;
+                    $b = $t;
+                break;
+                case 3:
+                    $r = $p;
+                    $g = $q;
+                    $b = $vv;
+                break;
+                case 4:
+                    $r = $t;
+                    $g = $p;
+                    $b = $vv;
+                break;
+                default:
+                    $r = $vv;
+                    $g = $p;
+                    $b = $q;
+            }
+        }
+
+        return self::_withRGB($r, $g, $b, $workingSpace, null, [
+            'hsb' => new ColorSpace\HSB($h, $s, $v, $workingSpace)
+        ]);
+    }
+
     static function withLab(float $L, float $a, float $b): Color {
         $fy = ($L + 16.0) / 116.0;
         $fx = 0.002 * $a + $fy;
@@ -49,7 +128,7 @@ class Color {
         ]);
     }
 
-    static function withRGB(int $r, int $g, int $b, string $workingSpace = self::WORKING_SPACE_RGB_sRGB): Color {
+    private static function _withRGB(float $r, float $g, float $b, string $workingSpace = self::WORKING_SPACE_RGB_sRGB, string $hex = null, array $options = null): Color {
         $vector = new Vector([
             $workingSpace::inverseCompanding($r / 255),
             $workingSpace::inverseCompanding($g / 255),
@@ -58,9 +137,9 @@ class Color {
 
         $xyz = ($workingSpace::getXYZMatrix())->vectorMultiply($vector);
 
-        $color = new self($xyz[0], $xyz[1], $xyz[2], [
-            'rgb' => new ColorSpace\RGB($r, $g, $b, $workingSpace)
-        ]);
+        $o = [ 'rgb' => new ColorSpace\RGB($r, $g, $b, $workingSpace, $hex) ];
+        $options = (is_null($options)) ? $o : array_merge($o, $options);
+        $color = new self($xyz[0], $xyz[1], $xyz[2], $options);
 
         if ($workingSpace::illuminant !== self::ILLUMINANT_D50) {
             $color->xyz->chromaticAdaptation(self::ILLUMINANT_D50, self::ILLUMINANT_D65);
@@ -69,10 +148,46 @@ class Color {
         return $color;
     }
 
+    static function withRGB(float $r, float $g, float $b, string $workingSpace = self::WORKING_SPACE_RGB_sRGB): Color {
+        return self::_withRGB($r, $g, $b, $workingSpace);
+    }
+
     static function withXYZ(float $x, float $y, float $z): Color {
         return new self($x, $y, $z);
     }
 
+
+    public function toLab(): ColorSpace\Lab {
+        if (!is_null($this->_Lab)) {
+            return $this->_Lab;
+        }
+
+        $xyz = $this->_xyz;
+        $cacheKey = "x{$xyz->x}_y{$xyz->y}_z{$xyz->z}";
+
+        if (isset(self::$cache[$cacheKey]) && isset(self::$cache[$cacheKey]['Lab'])) {
+            return self::$cache[$cacheKey]['Lab'];
+        }
+
+        $xyz = [
+            $xyz->x / self::ILLUMINANT_D50[0],
+            $xyz->y / self::ILLUMINANT_D50[1],
+            $xyz->z / self::ILLUMINANT_D50[2]
+        ];
+
+        foreach ($xyz as &$m) {
+            if ($m > self::EPSILON) {
+                $m = $m ** (1/3);
+            } else {
+                $m = (self::KAPPA * $m + 16) / 116;
+            }
+        }
+
+        $this->_Lab = new ColorSpace\Lab((116 * $xyz[1]) - 16, 500 * ($xyz[0] - $xyz[1]), 200 * ($xyz[1] - $xyz[2]));
+        self::$cache[$cacheKey]['Lab'] = $this->_Lab;
+
+        return $this->_Lab;
+    }
 
     public function toLMS(): ColorSpace\LMS {
         if (!is_null($this->_lms)) {
@@ -82,8 +197,8 @@ class Color {
         $xyz = $this->_xyz;
         $cacheKey = "x{$xyz->x}_y{$xyz->y}_z{$xyz->z}";
 
-        if (isset(self::$cache[$cacheKey]) && isset(self::$cache[$cacheKey]['lms'])) {
-            return self::$cache[$cacheKey]['lms'];
+        if (isset(self::$cache[$cacheKey]) && isset(self::$cache[$cacheKey]['LMS'])) {
+            return self::$cache[$cacheKey]['LMS'];
         }
 
         $xyz = [ $xyz->x, $xyz->y, $xyz->z ];
@@ -97,15 +212,20 @@ class Color {
             return $out;
         }, ColorSpace\XYZ::BRADFORD);
 
-        $result = new ColorSpace\LMS($result[0], $result[1], $result[2]);
+        $this->_lms = new ColorSpace\LMS($result[0], $result[1], $result[2]);
+        self::$cache[$cacheKey]['lms'] = $this->_lms;
 
-        self::$cache["x{$xyz[0]}_y{$xyz[1]}_z{$xyz[2]}"]['lms'] = $result;
-        $this->_lms = $result;
-
-        return $result;
+        return $this->_lms;
     }
 
     public function toRGB(string $workingSpace = self::WORKING_SPACE_RGB_sRGB): ColorSpace\RGB {
+        $xyz = $this->_xyz;
+        $cacheKey = "x{$xyz->x}_y{$xyz->y}_z{$xyz->z}";
+
+        if (isset(self::$cache[$cacheKey]) && isset(self::$cache[$cacheKey]['RGB'])) {
+            return self::$cache[$cacheKey]['RGB'];
+        }
+
         if ($workingSpace::illuminant !== self::ILLUMINANT_D50) {
             $xyz = (new ColorSpace\XYZ($this->_xyz->x, $this->_xyz->y, $this->_xyz->z))->chromaticAdaptation(self::ILLUMINANT_D65, self::ILLUMINANT_D50);
         } else {
@@ -116,9 +236,9 @@ class Color {
         $uncompandedVector = $matrix->vectorMultiply(new Vector([ $xyz->x, $xyz->y, $xyz->z ]));
 
         $this->_rgb = new ColorSpace\RGB(
-            (int)round($workingSpace::companding($uncompandedVector[0]) * 255),
-            (int)round($workingSpace::companding($uncompandedVector[1]) * 255),
-            (int)round($workingSpace::companding($uncompandedVector[2]) * 255),
+            $workingSpace::companding($uncompandedVector[0]) * 255,
+            $workingSpace::companding($uncompandedVector[1]) * 255,
+            $workingSpace::companding($uncompandedVector[2]) * 255,
             $workingSpace
         );
 
@@ -128,7 +248,6 @@ class Color {
 
     // CIE2000
     public function difference(Color $color): float {
-        // parametric weighting factors:
         $k_H = 1;
         $k_L = 1;
         $k_C = 1;
@@ -208,15 +327,6 @@ class Color {
     public function __get($property) {
         $prop = "_$property";
         if (property_exists($this, $prop)) {
-            if (is_null($this->$prop)) {
-                switch ($property) {
-                    case 'lms': $this->$prop = self::toLMS();
-                    break;
-                    case 'rgb': $this->$prop = self::toRGB();
-                    break;
-                }
-            }
-
             return $this->$prop;
         }
     }
