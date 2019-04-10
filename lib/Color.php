@@ -5,9 +5,7 @@ use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
 class Color {
-    protected $_hsb;
     protected $_Lab;
-    protected $_lms;
     protected $_rgb;
     protected $_xyz;
 
@@ -106,9 +104,7 @@ class Color {
             }
         }
 
-        return self::_withRGB($r, $g, $b, $workingSpace, null, [
-            'hsb' => new ColorSpace\HSB($h, $s, $v, $workingSpace)
-        ]);
+        return self::_withRGB($r, $g, $b, $workingSpace, null, new ColorSpace\RGB\HSB($h, $s, $v));
     }
 
     static function withLab(float $L, float $a, float $b): Color {
@@ -132,7 +128,7 @@ class Color {
         ]);
     }
 
-    private static function _withRGB(float $r, float $g, float $b, string $workingSpace = self::WORKING_SPACE_RGB_sRGB, string $hex = null, array $options = null): Color {
+    private static function _withRGB(float $r, float $g, float $b, string $workingSpace = self::WORKING_SPACE_RGB_sRGB, string $hex = null, ColorSpace\RGB\HSB $hsb = null): Color {
         $r = min(max($r, 0), 255);
         $g = min(max($g, 0), 255);
         $b = min(max($b, 0), 255);
@@ -144,10 +140,7 @@ class Color {
         ]);
 
         $xyz = ($workingSpace::getXYZMatrix())->vectorMultiply($vector);
-
-        $o = [ 'rgb' => new ColorSpace\RGB($r, $g, $b, $workingSpace, $hex) ];
-        $options = (is_null($options)) ? $o : array_merge($o, $options);
-        $color = new self($xyz[0], $xyz[1], $xyz[2], $options);
+        $color = new self($xyz[0], $xyz[1], $xyz[2], [ 'rgb' => new ColorSpace\RGB($r, $g, $b, $workingSpace, $hex, $hsb) ]);
 
         if ($workingSpace::illuminant !== self::ILLUMINANT_D50) {
             $color->xyz->chromaticAdaptation(self::ILLUMINANT_D50, self::ILLUMINANT_D65);
@@ -161,9 +154,10 @@ class Color {
     }
 
     static function withXYZ(float $x, float $y, float $z): Color {
-        $x = min(max($x, 0), 1);
-        $y = min(max($y, 0), 1);
-        $z = min(max($z, 0), 1);
+        // Can in some instances have values > 1. Illuminants are such an example.
+        $x = ($x < 0.0) ? 0.0 : $x;
+        $y = ($y < 0.0) ? 0.0 : $y;
+        $z = ($z < 0.0) ? 0.0 : $z;
 
         return new self($x, $y, $z);
     }
@@ -199,35 +193,6 @@ class Color {
         self::$cache[$cacheKey]['Lab'] = $this->_Lab;
 
         return $this->_Lab;
-    }
-
-    public function toLMS(): ColorSpace\LMS {
-        if (!is_null($this->_lms)) {
-            return $this->_lms;
-        }
-
-        $xyz = $this->_xyz;
-        $cacheKey = "x{$xyz->x}_y{$xyz->y}_z{$xyz->z}";
-
-        if (isset(self::$cache[$cacheKey]) && isset(self::$cache[$cacheKey]['LMS'])) {
-            return self::$cache[$cacheKey]['LMS'];
-        }
-
-        $xyz = [ $xyz->x, $xyz->y, $xyz->z ];
-        $result = array_map(function($m) use($xyz) {
-            $out = 0;
-            $count = 0;
-            foreach ($xyz as $key => $value) {
-                $out += $m[$key] * $value;
-            }
-
-            return $out;
-        }, ColorSpace\XYZ::BRADFORD);
-
-        $this->_lms = new ColorSpace\LMS($result[0], $result[1], $result[2]);
-        self::$cache[$cacheKey]['lms'] = $this->_lms;
-
-        return $this->_lms;
     }
 
     public function toRGB(string $workingSpace = self::WORKING_SPACE_RGB_sRGB): ColorSpace\RGB {

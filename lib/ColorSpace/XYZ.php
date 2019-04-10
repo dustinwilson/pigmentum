@@ -8,6 +8,8 @@ class XYZ extends AbstractSpace {
     protected $_y;
     protected $_z;
 
+    protected $_lms;
+
     const BRADFORD = [
         [ 0.8951000, 0.2664000, -0.1614000 ],
         [ -0.7502000, 1.7135000, 0.0367000 ],
@@ -20,10 +22,30 @@ class XYZ extends AbstractSpace {
         $this->_z = $z;
     }
 
+    public function toLMS(): XYZ\LMS {
+        if (!is_null($this->_lms)) {
+            return $this->_lms;
+        }
+
+        $xyz = [ $this->_x, $this->_y, $this->_z ];
+        $result = array_map(function($m) use($xyz) {
+            $out = 0;
+            $count = 0;
+            foreach ($xyz as $key => $value) {
+                $out += $m[$key] * $value;
+            }
+
+            return $out;
+        }, self::BRADFORD);
+
+        $this->_lms = new XYZ\LMS($result[0], $result[1], $result[2]);
+        return $this->_lms;
+    }
+
     // Bradford method of adaptation
     public function chromaticAdaptation(array $new, array $old): XYZ {
-        $new = (\dW\Pigmentum\Color::withXYZ($new[0], $new[1], $new[2]))->toLMS();
-        $old = (\dW\Pigmentum\Color::withXYZ($old[0], $old[1], $old[2]))->toLMS();
+        $new = (new XYZ($new[0], $new[1], $new[2]))->toLMS();
+        $old = (new XYZ($old[0], $old[1], $old[2]))->toLMS();
 
         $mir = new Matrix([
             [ $new->rho / $old->rho, 0, 0 ],

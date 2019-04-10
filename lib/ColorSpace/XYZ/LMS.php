@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace dW\Pigmentum\ColorSpace;
+namespace dW\Pigmentum\ColorSpace\XYZ;
 
-class LMS extends AbstractSpace {
+class LMS extends \dW\Pigmentum\ColorSpace\AbstractSpace {
     protected $_rho;
     protected $_gamma;
     protected $_beta;
