@@ -108,8 +108,8 @@ class Color {
     }
 
     static function withLab(float $L, float $a, float $b): Color {
-        $L = min(max($r, 0), 100);
-        $a = min(max($g, -128), 127);
+        $L = min(max($L, 0), 100);
+        $a = min(max($a, -128), 127);
         $b = min(max($b, -128), 127);
 
         $fy = ($L + 16.0) / 116.0;
