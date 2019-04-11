@@ -240,7 +240,22 @@ class Color {
         return $this->_RGB;
     }
 
+    // Average with RGB.
+    public static function average(Color ...$colors): Color {
+        $rsum = 0;
+        $gsum = 0;
+        $bsum = 0;
+        $length = sizeof($colors);
+        foreach ($colors as $c) {
+            $rsum += $c->RGB->r;
+            $gsum += $c->RGB->g;
+            $bsum += $c->RGB->b;
+        }
 
+        return Color::withRGB($rsum / $length, $gsum / $length, $bsum / $length);
+    }
+
+    // Mix with L*a*b*.
     public function mix(Color $color, float $percentage = 0.5): float {
         if ($percentage == 0) {
             return $this;
@@ -324,7 +339,6 @@ class Color {
 			($dCPrime / ($kC * $sC)) * ($dHPrime / ($kH * $sH)) * $rT
         );
     }
-
 
     public function __get($property) {
         $prop = "_$property";
