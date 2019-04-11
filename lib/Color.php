@@ -5,23 +5,25 @@ use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
 class Color {
-    protected $_Lab;
-    protected $_rgb;
-    protected $_xyz;
-
-    protected static $cache = [];
-
     const ILLUMINANT_D65 = [ 0.95047, 1, 1.08883 ];
     const ILLUMINANT_D50 = [ 0.96422, 1, 0.82521 ];
 
-    const WORKING_SPACE_RGB_sRGB = '\dW\Pigmentum\WorkingSpace\RGB\sRGB';
-    const WORKING_SPACE_RGB_ADOBERGB1998 = '\dW\Pigmentum\WorkingSpace\RGB\AdobeRGB1998';
+    const WS_sRGB = '\dW\Pigmentum\WorkingSpace\RGB\sRGB';
+    const WS_ADOBERGB1998 = '\dW\Pigmentum\WorkingSpace\RGB\AdobeRGB1998';
 
     const KAPPA = 903.296296296296296;
     const EPSILON = 0.008856451679036;
 
+    public static $workingSpace = self::WS_sRGB;
+
+    protected $_Lab;
+    protected $_RGB;
+    protected $_XYZ;
+
+    protected static $cache = [];
+
     private function __construct(float $x, float $y, float $z, array $props = []) {
-        $this->_xyz = new ColorSpace\XYZ($x, $y, $z);
+        $this->_XYZ = new ColorSpace\XYZ($x, $y, $z);
 
         if ($props !== []) {
             foreach ($props as $key => $value) {
@@ -31,7 +33,7 @@ class Color {
         }
     }
 
-    static function withHex(string $hex, string $workingSpace = self::WORKING_SPACE_RGB_sRGB): Color {
+    static function withHex(string $hex, string $workingSpace = self::WS_sRGB): Color {
         if (strpos($hex, '#') !== 0) {
             $hex = "#$hex";
         }
@@ -44,7 +46,11 @@ class Color {
         return self::_withRGB($r, $g, $b, $workingSpace, $hex);
     }
 
-    static function withHSB(float $h, float $s, float $v, string $workingSpace = self::WORKING_SPACE_RGB_sRGB): Color {
+    static function withHSB(float $h, float $s, float $v, string $workingSpace = null): Color {
+        if (is_null($workingSpace)) {
+            $workingSpace = self::$workingSpace;
+        }
+
         $ss = $s / 100;
         $vv = $v / 100 * 255;
 
@@ -128,7 +134,11 @@ class Color {
         ]);
     }
 
-    private static function _withRGB(float $r, float $g, float $b, string $workingSpace = self::WORKING_SPACE_RGB_sRGB, string $hex = null, ColorSpace\RGB\HSB $hsb = null): Color {
+    private static function _withRGB(float $r, float $g, float $b, string $workingSpace = null, string $hex = null, ColorSpace\RGB\HSB $hsb = null): Color {
+        if (is_null($workingSpace)) {
+            $workingSpace = self::$workingSpace;
+        }
+
         $r = min(max($r, 0), 255);
         $g = min(max($g, 0), 255);
         $b = min(max($b, 0), 255);
@@ -143,13 +153,17 @@ class Color {
         $color = new self($xyz[0], $xyz[1], $xyz[2], [ 'rgb' => new ColorSpace\RGB($r, $g, $b, $workingSpace, $hex, $hsb) ]);
 
         if ($workingSpace::illuminant !== self::ILLUMINANT_D50) {
-            $color->xyz->chromaticAdaptation(self::ILLUMINANT_D50, self::ILLUMINANT_D65);
+            $color->XYZ->chromaticAdaptation(self::ILLUMINANT_D50, self::ILLUMINANT_D65);
         }
 
         return $color;
     }
 
-    static function withRGB(float $r, float $g, float $b, string $workingSpace = self::WORKING_SPACE_RGB_sRGB): Color {
+    static function withRGB(float $r, float $g, float $b, string $workingSpace = null): Color {
+        if (is_null($workingSpace)) {
+            $workingSpace = self::$workingSpace;
+        }
+
         return self::_withRGB($r, $g, $b, $workingSpace);
     }
 
@@ -168,7 +182,7 @@ class Color {
             return $this->_Lab;
         }
 
-        $xyz = $this->_xyz;
+        $xyz = $this->_XYZ;
         $cacheKey = "x{$xyz->x}_y{$xyz->y}_z{$xyz->z}";
 
         if (isset(self::$cache[$cacheKey]) && isset(self::$cache[$cacheKey]['Lab'])) {
@@ -195,8 +209,12 @@ class Color {
         return $this->_Lab;
     }
 
-    public function toRGB(string $workingSpace = self::WORKING_SPACE_RGB_sRGB): ColorSpace\RGB {
-        $xyz = $this->_xyz;
+    public function toRGB(string $workingSpace = null): ColorSpace\RGB {
+        if (is_null($workingSpace)) {
+            $workingSpace = self::$workingSpace;
+        }
+
+        $xyz = $this->_XYZ;
         $cacheKey = "x{$xyz->x}_y{$xyz->y}_z{$xyz->z}";
 
         if (isset(self::$cache[$cacheKey]) && isset(self::$cache[$cacheKey]['RGB'])) {
@@ -204,106 +222,118 @@ class Color {
         }
 
         if ($workingSpace::illuminant !== self::ILLUMINANT_D50) {
-            $xyz = (new ColorSpace\XYZ($this->_xyz->x, $this->_xyz->y, $this->_xyz->z))->chromaticAdaptation(self::ILLUMINANT_D65, self::ILLUMINANT_D50);
+            $xyz = (new ColorSpace\XYZ($this->_XYZ->x, $this->_XYZ->y, $this->_XYZ->z))->chromaticAdaptation(self::ILLUMINANT_D65, self::ILLUMINANT_D50);
         } else {
-            $xyz = $this->_xyz;
+            $xyz = $this->_XYZ;
         }
 
         $matrix = $workingSpace::getXYZMatrix()->inverse();
         $uncompandedVector = $matrix->vectorMultiply(new Vector([ $xyz->x, $xyz->y, $xyz->z ]));
 
-        $this->_rgb = new ColorSpace\RGB(
+        $this->_RGB = new ColorSpace\RGB(
             $workingSpace::companding($uncompandedVector[0]) * 255,
             $workingSpace::companding($uncompandedVector[1]) * 255,
             $workingSpace::companding($uncompandedVector[2]) * 255,
             $workingSpace
         );
 
-        return $this->_rgb;
+        return $this->_RGB;
     }
 
 
-    // CIE2000
-    public function difference(Color $color): float {
-        $k_H = 1;
-        $k_L = 1;
-        $k_C = 1;
-
-        $x = $this->_lab;
-        $y = $color->lab;
-
-        $a0 = $x->a;
-        $a1 = $y->a;
-        $b0 = $x->b;
-        $b1 = $y->b;
-
-        $C_ab0 = sqrt($a0 * $a0 + $b0 * $b0);
-        $C_ab1 = sqrt($a1 * $a1 + $b1 * $b1);
-
-        $C_ab_mean = ($C_ab0 + $C_ab1) / 2;
-
-        $G = 0.5 * (1 - sqrt($C_ab_mean ** 7 / $C_ab_mean ** 7 + 25 ** 7));
-
-        $a_prime0 = (1 + $G) * $a0;
-        $a_prime1 = (1 + $G) * $a1;
-        $C_prime0 = sqrt($a_prime0 * $a_prime0 + $b0 * $b0);
-        $C_prime1 = sqrt($a_prime1 * $a_prime1 + $b1 * $b1);
-
-        $hRadians = atan2($b0, $a_prime0);
-        $h_prime0 = rad2deg($hRadians);
-        $hRadians = atan2($b1, $a_prime1);
-        $h_prime1 = rad2deg($hRadians);
-
-        $dL_prime = $y->L - $x->L;;
-        $dC_prime = $C_prime1 - $C_prime0;
-
-        if ($C_prime0 * $C_prime1 === 0) {
-            $dh_prime = 0;
-        } elseif (abs($h_prime1 - $h_prime0) <= 180) {
-            $dh_prime = $h_prime1 - $h_prime0;
-        } elseif ($h_prime1 - $h_prime0 > 180) {
-            $dh_prime = $h_prime1 - $h_prime0 - 360;
-        } elseif ($h_prime1 - $h_prime0 < -180) {
-            $dh_prime = $h_prime1 - $h_prime0 + 360;
-        } else {
-            $dh_prime = 0;
+    public function mix(Color $color, float $percentage = 0.5): float {
+        if ($percentage == 0) {
+            return $this;
+        } elseif ($percentage == 1) {
+            return $color;
         }
 
-        $DH_prime = 2 * sqrt($C_prime0 * $C_prime1) * sin($dh_prime / 2);
-        $L_prime_mean = ($x->L + $y->L) / 2;
-        $C_prime_mean = ($C_prime0 + $C_prime1) / 2;
+        $distance = $this->distance($color);
+        $travelDistance = $distance - ($distance * ((100 - $percentage *= 100) / 100));
+        $ratio = $travelDistance / $distance;
 
-        if ($C_prime0 * $C_prime1 == 0) {
-            $h_prime_mean = $h_prime0 + $h_prime1;
-        } elseif (abs($h_prime0 - $h_prime1) <= 180) {
-            $h_prime_mean = ($h_prime0 + $h_prime1) / 2;
-        } elseif (abs($h_prime0 - $h_prime1) > 180 && $h_prime0 + $h_prime1 < 360) {
-            $h_prime_mean = ($h_prime0 + $h_prime1 + 360) / 2;
-        } elseif (abs($h_prime0 - $h_prime1) > 180 && $h_prime0 + $h_prime1 >= 360) {
-            $h_prime_mean = ($h_prime0 + $h_prime1 - 360) / 2;
-        } else {
-            $h_prime_mean = $h_prime0 + $h_prime1;
-        }
-
-        $T = 1 - 0.17 * cos($h_prime_mean - 30) + 0.24 * cos(2 * $h_prime_mean) + 0.32 * cos(3 * $h_prime_mean + 6) - 0.20 * cos(4 * $h_prime_mean - 63);
-        $dTheta = 30 * exp(0 - (($h_prime_mean - 275) / 25) ** 2);
-        $R_C = 2 * sqrt($C_prime_mean ** 7 / ($C_prime_mean ** 7 + 25 ** 7));
-        $S_L = 1 + 0.015 * ($L_prime_mean - 50) ** 2 / sqrt(20 + ($L_prime_mean - 50) ** 2);
-        $S_C = 1 + 0.045 * $C_prime_mean;
-        $S_H = 1 + 0.015 * $C_prime_mean * $T;
-        $R_T = 0 - sin(2 * $dTheta) * $R_C;
-
-        return sqrt(
-            ($dL_prime / ($k_L * $S_L)) ** 2 +
-            ($dC_prime / ($k_C * $S_C)) ** 2 +
-            ($dH_prime / ($k_H * $S_H)) ** 2 +
-            $R_T * ($dC_prime / ($k_C * $S_C)) * ($dH_prime / ($k_H * $S_H))
+        return Color::withLab(
+            $this->Lab->L + ($ratio * ($color->Lab->L - $this->Lab->L)),
+            $this->Lab->a + ($ratio * ($color->Lab->a - $this->Lab->a)),
+            $this->Lab->b + ($ratio * ($color->Lab->b - $this->Lab->b))
         );
     }
+
+    public function distance(Color $color): float {
+        return sqrt(($color->Lab->L - $this->Lab->L) ** 2 + ($color->Lab->a - $this->Lab->a) ** 2 + ($color->Lab->b - $this->Lab->b) ** 2);
+    }
+
+    public function difference(Color $color): float {
+        return $this->deltaE($color);
+    }
+
+    // CIE2000
+    public function deltaE(Color $color): float {
+        $Lab1 = $this->Lab;
+        $Lab2 = $color->Lab;
+
+        $kL = 1.0;
+	    $kC = 1.0;
+	    $kH = 1.0;
+	    $lBarPrime = 0.5 * ($Lab1->L + $Lab2->L);
+	    $c1 = sqrt($Lab1->a ** 2 + $Lab1->b ** 2);
+	    $c2 = sqrt($Lab2->a ** 2 + $Lab2->b ** 2);
+	    $cBar = 0.5 * ($c1 + $c2);
+	    $cBar7 = $cBar ** 7;
+	    $g = 0.5 * (1.0 - sqrt($cBar7 / ($cBar7 + (25 ** 7))));
+	    $a1Prime = $Lab1->a * (1.0 + $g);
+	    $a2Prime = $Lab2->a * (1.0 + $g);
+	    $c1Prime = sqrt($a1Prime ** 2 + $Lab1->b ** 2);
+	    $c2Prime = sqrt($a2Prime ** 2 + $Lab2->b ** 2);
+	    $cBarPrime = 0.5 * ($c1Prime + $c2Prime);
+
+	    $h1Prime = (atan2($Lab1->b, $a1Prime) * 180.0) / M_PI;
+        if ($h1Prime < 0.0) {
+            $h1Prime += 360.0;
+        }
+
+	    $h2Prime = (atan2($Lab2->b, $a2Prime) * 180.0) / M_PI;
+	    if ($h2Prime < 0.0) {
+            $h2Prime += 360.0;
+        }
+
+	    $hBarPrime = (abs($h1Prime - $h2Prime) > 180.0) ? (0.5 * ($h1Prime + $h2Prime + 360.0)) : (0.5 * ($h1Prime + $h2Prime));
+	    $t = 1.0 - 0.17 * cos(M_PI * ($hBarPrime - 30.0) / 180.0) + 0.24 * cos(M_PI * (2.0 * $hBarPrime) / 180.0) + 0.32 * cos(M_PI * (3.0 * $hBarPrime +  6.0) / 180.0) - 0.20 * cos(M_PI * (4.0 * $hBarPrime - 63.0) / 180.0);
+
+        if (abs($h2Prime - $h1Prime) <= 180.0) {
+            $dhPrime = $h2Prime - $h1Prime;
+        } else {
+            $dhPrime = ($h2Prime <= $h1Prime) ? ($h2Prime - $h1Prime + 360.0) : ($h2Prime - $h1Prime - 360.0);
+        }
+
+	    $dLPrime = $Lab2->L - $Lab1->L;
+	    $dCPrime = $c2Prime - $c1Prime;
+	    $dHPrime = 2.0 * sqrt($c1Prime * $c2Prime) * sin(M_PI * (0.5 * $dhPrime) / 180.0);
+	    $sL = 1.0 + ((0.015 * ($lBarPrime - 50.0) * ($lBarPrime - 50.0)) / sqrt(20.0 + ($lBarPrime - 50.0) * ($lBarPrime - 50.0)));
+	    $sC = 1.0 + 0.045 * $cBarPrime;
+	    $sH = 1.0 + 0.015 * $cBarPrime * $t;
+	    $dTheta = 30.0 * exp(0 - (($hBarPrime - 275.0) / 25.0) * (($hBarPrime - 275.0) / 25.0));
+        $cBarPrime7 = $cBarPrime ** 7;
+	    $rC = sqrt($cBarPrime7 / ($cBarPrime7 + (25 ** 7)));
+	    $rT = -2.0 * $rC * sin(M_PI * (2.0 * $dTheta) / 180.0);
+
+        return sqrt(
+			($dLPrime / ($kL * $sL)) * ($dLPrime / ($kL * $sL)) +
+			($dCPrime / ($kC * $sC)) * ($dCPrime / ($kC * $sC)) +
+			($dHPrime / ($kH * $sH)) * ($dHPrime / ($kH * $sH)) +
+			($dCPrime / ($kC * $sC)) * ($dHPrime / ($kH * $sH)) * $rT
+        );
+    }
+
 
     public function __get($property) {
         $prop = "_$property";
         if (property_exists($this, $prop)) {
+            if (is_null($this->$prop)) {
+                $method = "to$property";
+                $this->$prop = $this->$method();
+            }
+
             return $this->$prop;
         }
     }

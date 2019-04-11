@@ -11,7 +11,11 @@ class RGB extends AbstractSpace {
     protected $_hsb;
     protected $_workingSpace;
 
-    public function __construct(float $r, float $g, float $b, string $workingSpace = dW\Pigmentum\Color::WORKING_SPACE_RGB_sRGB, string $hex = null, RGB\HSB $hsb = null) {
+    public function __construct(float $r, float $g, float $b, string $workingSpace = null, string $hex = null, RGB\HSB $hsb = null) {
+        if (is_null($workingSpace)) {
+            $workingSpace = \dW\Pigmentum\Color::$workingSpace;
+        }
+
         $this->_r = $r;
         $this->_g = $g;
         $this->_b = $b;

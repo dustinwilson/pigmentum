@@ -18,7 +18,7 @@ class Lab extends AbstractSpace {
 
     public function toLCH(): Lab\LCH {
         $c = sqrt($this->_a * $this->_a + $this->_b * $this->_b);
-        $h = (rad2deg(atan2($this->_b, $this->_a)) + 360) % 360;
+        $h = fmod((rad2deg(atan2($this->_b, $this->_a)) + 360), 360);
         if (round($c * 10000) === 0) {
             $h = 0;
         }
