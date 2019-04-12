@@ -160,7 +160,6 @@ class Color {
             $color->XYZ->chromaticAdaptation(self::ILLUMINANT_D50, self::ILLUMINANT_D65);
         }
 
-        $this->_RGB = $color;
         return $color;
     }
 
