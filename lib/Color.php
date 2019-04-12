@@ -260,7 +260,7 @@ class Color {
     }
 
     // Mix with L*a*b*.
-    public function mix(Color $color, float $percentage = 0.5): float {
+    public function mix(Color $color, float $percentage = 0.5): Color {
         if ($percentage == 0) {
             return $this;
         } elseif ($percentage == 1) {
