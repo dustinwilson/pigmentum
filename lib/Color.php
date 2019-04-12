@@ -154,7 +154,7 @@ class Color {
         ]);
 
         $xyz = ($workingSpace::getXYZMatrix())->vectorMultiply($vector);
-        $color = new self($xyz[0], $xyz[1], $xyz[2], [ 'rgb' => new ColorSpace\RGB($r, $g, $b, $workingSpace, $hex, $hsb) ]);
+        $color = new self($xyz[0], $xyz[1], $xyz[2], [ 'RGB' => new ColorSpace\RGB($r, $g, $b, $workingSpace, $hex, $hsb) ]);
 
         if ($workingSpace::illuminant !== self::ILLUMINANT_D50) {
             $color->XYZ->chromaticAdaptation(self::ILLUMINANT_D50, self::ILLUMINANT_D65);
