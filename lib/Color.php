@@ -33,7 +33,11 @@ class Color {
         }
     }
 
-    static function withHex(string $hex, string $workingSpace = self::WS_sRGB): Color {
+    static function withHex(string $hex, string $workingSpace = null): Color {
+        if (is_null($workingSpace)) {
+            $workingSpace = self::$workingSpace;
+        }
+
         if (strpos($hex, '#') !== 0) {
             $hex = "#$hex";
         }
@@ -156,6 +160,7 @@ class Color {
             $color->XYZ->chromaticAdaptation(self::ILLUMINANT_D50, self::ILLUMINANT_D65);
         }
 
+        $this->_RGB = $color;
         return $color;
     }
 
