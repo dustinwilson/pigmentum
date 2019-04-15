@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace dW\Pigmentum\ColorSpace\Lab;
 
-class LCH extends \dW\Pigmentum\ColorSpace\AbstractSpace {
+class Lch extends \dW\Pigmentum\ColorSpace\AbstractSpace {
     protected $_L;
     protected $_c;
     protected $_h;

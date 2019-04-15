@@ -22,7 +22,7 @@ class XYZ extends AbstractSpace {
         $this->_z = $z;
     }
 
-    public function toLMS(): XYZ\LMS {
+    protected function toLMS(): XYZ\LMS {
         if (!is_null($this->_lms)) {
             return $this->_lms;
         }
