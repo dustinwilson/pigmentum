@@ -57,18 +57,20 @@ class Color {
 
     // Mix with L*a*b*. Colors in this color space are perceptively uniform and are
     // perfect for mixing.
-    public function mix(Color $color, float $ratio = 0.5): Color {
-        if ($ratio == 0) {
+    public function mix(Color $color, float $percentage = 0.5): Color {
+        if ($percentage == 0) {
             return $this;
-        } elseif ($ratio == 1) {
+        } elseif ($percentage == 1) {
             return $color;
         }
 
-        $invR = 1 - $ratio;
+        $distance = $this->distance($color);
+        $travelDistance = $distance - ($distance * ((100 - $percentage *= 100) / 100));
+        $ratio = $travelDistance / $distance;
         return Color::withLab(
-            ($this->Lab->L + $color->Lab->L) * $invR,
-            ($this->_Lab->a + $color->_Lab->a) * $invR,
-            ($this->_Lab->b + $color->_Lab->b) * $invR
+            $this->Lab->L + ($ratio * ($color->Lab->L - $this->Lab->L)),
+            $this->Lab->a + ($ratio * ($color->Lab->a - $this->Lab->a)),
+            $this->Lab->b + ($ratio * ($color->Lab->b - $this->Lab->b))
         );
     }
 
@@ -150,5 +152,9 @@ class Color {
 
             return $this->$prop;
         }
+    }
+
+    public function __toString(): string {
+        return $this->Hex;
     }
 }
