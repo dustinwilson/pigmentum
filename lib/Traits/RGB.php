@@ -205,9 +205,9 @@ trait RGB {
         $uncompandedVector = $matrix->vectorMultiply(new Vector([ $xyz->x, $xyz->y, $xyz->z ]));
 
         $this->_RGB = new ColorSpaceRGB(
-            $workingSpace::companding($uncompandedVector[0]) * 255,
-            $workingSpace::companding($uncompandedVector[1]) * 255,
-            $workingSpace::companding($uncompandedVector[2]) * 255,
+            max($workingSpace::companding($uncompandedVector[0]) * 255, 0),
+            max($workingSpace::companding($uncompandedVector[1]) * 255, 0),
+            max($workingSpace::companding($uncompandedVector[2]) * 255, 0),
             $workingSpace
         );
 

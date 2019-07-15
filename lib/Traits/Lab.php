@@ -55,24 +55,37 @@ trait Lab {
             $xyz->z / Color::ILLUMINANT_D50[2]
         ];
 
-        foreach ($xyz as &$m) {
-            if ($m > Color::EPSILON) {
-                $m = $m ** (1/3);
+        $xyz = array_map(function($n) {
+            if ($n > Color::EPSILON) {
+                return $n ** (1/3);
             } else {
-                $m = (Color::KAPPA * $m + 16) / 116;
+                return (Color::KAPPA * $n + 16.0) / 116.0;
             }
-        }
+        }, $xyz);
 
-        $this->_Lab = new ColorSpaceLab((116 * $xyz[1]) - 16, 500 * ($xyz[0] - $xyz[1]), 200 * ($xyz[1] - $xyz[2]));
+        // Catch an edge case where a value might be an infantesimally small negative number, causing hell in math later on if needing to convert to Lch at the cost of a few decimal points. Also get rid of garbage values like "-0"...
+        $L = round(116 * $xyz[1] - 16, 5);
+        $L = ($L != 0) ? $L : 0;
+        $a = round(500 * ($xyz[0] - $xyz[1]), 5);
+        $a = ($a != 0) ? $a : 0;
+        $b = round(200 * ($xyz[1] - $xyz[2]), 5);
+        $b = ($b != 0) ? $b : 0;
+
+        $this->_Lab = new ColorSpaceLab($L, $a, $b);
 
         return $this->_Lab;
     }
 
     public function toLch(): ColorSpaceLch {
-        $c = sqrt($this->Lab->a * $this->_Lab->a + $this->_Lab->b * $this->_Lab->b);
-        $h = fmod((rad2deg(atan2($this->_Lab->b, $this->_Lab->a)) + 360), 360);
-        if (round($c * 10000) === 0) {
-            $h = 0;
+        if (is_null($this->_Lab)) {
+            $this->toLab();
+        }
+
+        $c = sqrt($this->_Lab->a**2 + $this->_Lab->b**2);
+
+        $h = rad2deg(atan2($this->_Lab->b, $this->_Lab->a));
+        if ($h < 0) {
+            $h += 360;
         }
 
         $this->_Lch = new ColorSpaceLch($this->_Lab->L, $c, $h);
