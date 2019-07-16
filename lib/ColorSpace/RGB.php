@@ -19,11 +19,4 @@ class RGB extends AbstractSpace {
         $this->_b = $b;
         $this->_workingSpace = $workingSpace;
     }
-
-
-    public function __get($property) {
-        if ($property === 'workingSpace') {
-            return $this->_workingSpace;
-        }
-    }
 }
