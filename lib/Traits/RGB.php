@@ -139,7 +139,7 @@ trait RGB {
             return $this->_hex;
         }
 
-        $this->_hex = sprintf("#%02x%02x%02x", (int)round($this->RGB->r), (int)round($this->_RGB->g), (int)round($this->_RGB->b));
+        $this->_hex = sprintf("#%02x%02x%02x", (int)round($this->_RGB->r), (int)round($this->_RGB->g), (int)round($this->_RGB->b));
         return $this->_hex;
     }
 
@@ -205,11 +205,13 @@ trait RGB {
         $uncompandedVector = $matrix->vectorMultiply(new Vector([ $xyz->x, $xyz->y, $xyz->z ]));
 
         $this->_RGB = new ColorSpaceRGB(
-            max($workingSpace::companding($uncompandedVector[0]) * 255, 0),
-            max($workingSpace::companding($uncompandedVector[1]) * 255, 0),
-            max($workingSpace::companding($uncompandedVector[2]) * 255, 0),
+            min(max($workingSpace::companding($uncompandedVector[0]) * 255, 0), 255),
+            min(max($workingSpace::companding($uncompandedVector[1]) * 255, 0), 255),
+            min(max($workingSpace::companding($uncompandedVector[2]) * 255, 0), 255),
             $workingSpace
         );
+
+        $this->_Hex = null;
 
         return $this->_RGB;
     }
