@@ -135,6 +135,10 @@ trait RGB {
 
 
     public function toHex(): string {
+        if (is_null($this->_RGB)) {
+            $this->toRGB();
+        }
+
         if (!is_null($this->_hex)) {
             return $this->_hex;
         }
@@ -144,6 +148,10 @@ trait RGB {
     }
 
     public function toHSB(): ColorSpaceHSB {
+        if (is_null($this->_RGB)) {
+            $this->toRGB();
+        }
+
         if (!is_null($this->_hsb)) {
             return $this->_hsb;
         }

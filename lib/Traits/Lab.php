@@ -63,15 +63,13 @@ trait Lab {
             }
         }, $xyz);
 
-        // Catch an edge case where a value might be an infantesimally small negative number, causing hell in math later on if needing to convert to Lch at the cost of a few decimal points. Also get rid of garbage values like "-0"...
         $L = round(116 * $xyz[1] - 16, 5);
-        $L = ($L != 0) ? $L : 0;
         $a = round(500 * ($xyz[0] - $xyz[1]), 5);
-        $a = ($a != 0) ? $a : 0;
         $b = round(200 * ($xyz[1] - $xyz[2]), 5);
-        $b = ($b != 0) ? $b : 0;
 
-        $this->_Lab = new ColorSpaceLab($L, $a, $b);
+        // Combat issues where -0 would interfere in math down the road such as
+        // with toLch below.
+        $this->_Lab = new ColorSpaceLab(($L == -0) 0 : $L, ($a == -0) ? 0 :$a, ($b  == -0) ? 0 : $b);
 
         return $this->_Lab;
     }
