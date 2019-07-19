@@ -69,7 +69,7 @@ trait Lab {
 
         // Combat issues where -0 would interfere in math down the road such as
         // with toLch below.
-        $this->_Lab = new ColorSpaceLab(($L == -0) 0 : $L, ($a == -0) ? 0 :$a, ($b  == -0) ? 0 : $b);
+        $this->_Lab = new ColorSpaceLab(($L == -0) ? 0 : $L, ($a == -0) ? 0 : $a, ($b == -0) ? 0 : $b);
 
         return $this->_Lab;
     }
