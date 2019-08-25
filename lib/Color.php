@@ -55,6 +55,22 @@ class Color {
         return Color::withRGB($rsum / $length, $gsum / $length, $bsum / $length);
     }
 
+    // Calculates the WCAG contrast ratio between the color and a supplied one.
+    public function contrastRatio(Color $color): float {
+        $RGBa = $this->RGB;
+        $RGBb = $color->RGB;
+        $wsA = $RGBa->workingSpace;
+        $wsB = $RGBb->workingSpace;
+        $matrixA = $wsA::getXYZMatrix()[1];
+        $matrixB = $wsB::getXYZMatrix()[1];
+
+        $a = $matrixA[0] * $wsA::inverseCompanding($RGBa->r / 255) + $matrixA[1] * $wsA::inverseCompanding($RGBa->g / 255) + $matrixA[2] * $wsA::inverseCompanding($RGBa->b / 255);
+        $b = $matrixB[0] * $wsB::inverseCompanding($RGBb->r / 255) + $matrixB[1] * $wsB::inverseCompanding($RGBb->g / 255) + $matrixB[2] * $wsB::inverseCompanding($RGBb->b / 255);
+
+        $ratio = ($a + 0.05) / ($b + 0.05);
+        return ($a > $b) ? $ratio : 1 / $ratio;
+    }
+
     // Mix with L*a*b*. Colors in this color space are perceptively uniform and are
     // perfect for mixing.
     public function mix(Color $color, float $percentage = 0.5): Color {
