@@ -5,7 +5,7 @@ use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
 class Color {
-    use Traits\RGB, Traits\Lab;
+    use Traits\RGB, Traits\Lab, Traits\Luv;
 
     const WS_sRGB = '\dW\Pigmentum\WorkingSpace\RGB\sRGB';
     const WS_ADOBERGB1998 = '\dW\Pigmentum\WorkingSpace\RGB\AdobeRGB1998';
