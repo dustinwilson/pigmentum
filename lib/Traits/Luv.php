@@ -10,7 +10,7 @@ use MathPHP\LinearAlgebra\Vector as Vector;
 trait Luv {
     protected $_Luv;
 
-    private static function _withLuv(float $L, float $u, float $v, ColorSpaceLCHab $LCHuv = null): Color {
+    private static function _withLuv(float $L, float $u, float $v, ColorSpaceLCHuv $LCHuv = null): Color {
         $u0 = (4 * Color::ILLUMINANT_D50[0]) / (Color::ILLUMINANT_D50[0] + 15 * Color::ILLUMINANT_D50[1] + 3 * Color::ILLUMINANT_D50[2]);
         $v0 = (9 * Color::ILLUMINANT_D50[0]) / (Color::ILLUMINANT_D50[0] + 15 * Color::ILLUMINANT_D50[1] + 3 * Color::ILLUMINANT_D50[2]);
 
@@ -31,7 +31,7 @@ trait Luv {
     }
 
     public static function withLuv(float $L, float $u, float $v): Color {
-        return self::_withLab($L, $u, $v);
+        return self::_withLuv($L, $u, $v);
     }
 
     public static function withLCHuv(float $L, float $C, float $H): Color {
