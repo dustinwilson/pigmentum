@@ -876,9 +876,9 @@ HEREDOC;
 
     public function addPrimary(Color ...$colors) {
         foreach ($colors as $c) {
-            $Lch = $c->Lch;
+            $LCH = $c->LCHab;
 
-            $hue = $Lch->h - 40;
+            $hue = $LCH->H - 40;
             $hue = ($hue > 0) ? $hue : 360 + $hue;
 
             // If the hue is close to a true primary location (every 60°) then fudge it to
@@ -1031,7 +1031,7 @@ HEREDOC;
     }
 
     public function closestPrimary(Color $color): Color {
-        $givenHue = $color->Lch->h;
+        $givenHue = $color->LCHab->H;
         $min = INF;
         $primary = null;
         $primaryHue = null;
@@ -1041,7 +1041,7 @@ HEREDOC;
                 return $color;
             }
 
-            $pHue = $c->Lch->h;
+            $pHue = $c->LCHab->H;
             $cHue = $pHue;
             $gHue = $givenHue;
             if ($givenHue > 180 && $cHue < 180) {
@@ -1077,7 +1077,7 @@ HEREDOC;
         $primary2 = $this->_colors[$this->_positions[$primary2Pos]];
 
         $travel = abs($givenHue - $primaryHue);
-        $distance = abs($primary2->Lch->h - $primaryHue);
+        $distance = abs($primary2->LCHab->H - $primaryHue);
         $ratio = $travel / $distance;
 
         $newPrimary = $primary->mix($primary2, $ratio);
@@ -1088,14 +1088,14 @@ HEREDOC;
 
     public function closestColorInGamut(Color $color): Color {
         $primary = $this->closestPrimary($color);
-        $maxChroma = $primary->Lch->c;
-        $colorChroma = $color->Lch->c;
+        $maxChroma = $primary->LCHab->C;
+        $colorChroma = $color->LCHab->C;
 
         if ($maxChroma > $colorChroma) {
             return $color;
         }
 
-        return Color::withLch($color->Lab->L, min($colorChroma, $maxChroma), $primary->Lch->h);
+        return Color::withLCHab($color->Lab->L, min($colorChroma, $maxChroma), $primary->LCHab->H);
     }
 
 

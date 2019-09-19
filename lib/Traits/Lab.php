@@ -3,15 +3,15 @@ declare(strict_types=1);
 namespace dW\Pigmentum\Traits;
 use dW\Pigmentum\Color as Color;
 use dW\Pigmentum\ColorSpace\Lab as ColorSpaceLab;
-use dW\Pigmentum\ColorSpace\Lab\Lch as ColorSpaceLch;
+use dW\Pigmentum\ColorSpace\Lab\LCHab as ColorSpaceLCHab;
 use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
 trait Lab {
     protected $_Lab;
-    protected $_Lch;
+    protected $_LCHab;
 
-    private static function _withLab(float $L, float $a, float $b, ColorSpaceLch $lch = null): Color {
+    private static function _withLab(float $L, float $a, float $b, ColorSpaceLCHab $LCHab = null): Color {
         $L = min(max($L, 0), 100);
         $a = min(max($a, -128), 127);
         $b = min(max($b, -128), 127);
@@ -29,7 +29,7 @@ trait Lab {
 
         return new self($xr * Color::ILLUMINANT_D50[0], $yr * Color::ILLUMINANT_D50[1], $zr * Color::ILLUMINANT_D50[2], [
             'Lab' => new ColorSpaceLab($L, $a, $b),
-            'Lch' => $lch
+            'LCHab' => $LCHab
         ]);
     }
 
@@ -37,9 +37,9 @@ trait Lab {
         return self::_withLab($L, $a, $b);
     }
 
-    public static function withLch(float $L, float $c, float $h): Color {
-        $hh = deg2rad($h);
-        return self::withLab($L, cos($hh) * $c, sin($hh) * $c, new ColorSpaceLch($L, $c, $h));
+    public static function withLCHab(float $L, float $C, float $H): Color {
+        $hh = deg2rad($H);
+        return self::withLab($L, cos($hh) * $C, sin($hh) * $C, new ColorSpaceLCHab($L, $C, $H));
     }
 
     public function toLab(): ColorSpaceLab {
@@ -67,14 +67,12 @@ trait Lab {
         $a = round(500 * ($xyz[0] - $xyz[1]), 5);
         $b = round(200 * ($xyz[1] - $xyz[2]), 5);
 
-        // Combat issues where -0 would interfere in math down the road such as
-        // with toLch below.
+        // Combat issues where -0 would interfere in math down the road.
         $this->_Lab = new ColorSpaceLab(($L == -0) ? 0 : $L, ($a == -0) ? 0 : $a, ($b == -0) ? 0 : $b);
-
         return $this->_Lab;
     }
 
-    public function toLch(): ColorSpaceLch {
+    public function toLCHab(): ColorSpaceLCHab {
         if (is_null($this->_Lab)) {
             $this->toLab();
         }
@@ -86,7 +84,7 @@ trait Lab {
             $h += 360;
         }
 
-        $this->_Lch = new ColorSpaceLch($this->_Lab->L, $c, $h);
-        return $this->_Lch;
+        $this->_LCHab = new ColorSpaceLCHab($this->_Lab->L, $c, $h);
+        return $this->_LCHab;
     }
 }
