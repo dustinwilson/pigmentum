@@ -50,7 +50,7 @@ trait Luv {
         if ($L > 99.9999999 || $L < 0.00000001) {
             $C = 0;
         } else {
-            $max = self::maxChromaForLH($L, $H);
+            $max = self::_withLCHuv($L, 100, $H)->LCHuv->getMaximumChroma();
             $C = $max / 100 * $S;
         }
 
