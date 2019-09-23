@@ -59,7 +59,7 @@ trait Luv {
 
     private static function _withLCHuv(float $L, float $C, float $H, ColorSpaceHSLuv $HSLuv = null): Color {
         $hh = deg2rad($H);
-        return self::withLuv($L, cos($hh) * $C, sin($hh) * $C, $HSLuv, new ColorSpaceLCHuv($L, $C, $H));
+        return self::_withLuv($L, cos($hh) * $C, sin($hh) * $C, $HSLuv, new ColorSpaceLCHuv($L, $C, $H));
     }
 
     public static function withLCHuv(float $L, float $C, float $H): Color {
