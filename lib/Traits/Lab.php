@@ -39,7 +39,7 @@ trait Lab {
 
     public static function withLCHab(float $L, float $C, float $H): Color {
         $hh = deg2rad($H);
-        return self::withLab($L, cos($hh) * $C, sin($hh) * $C, new ColorSpaceLCHab($L, $C, $H));
+        return self::_withLab($L, cos($hh) * $C, sin($hh) * $C, new ColorSpaceLCHab($L, $C, $H));
     }
 
     public function toLab(): ColorSpaceLab {
