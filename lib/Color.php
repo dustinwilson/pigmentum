@@ -80,13 +80,10 @@ class Color {
             return $color;
         }
 
-        $distance = $this->distance($color);
-        $travelDistance = $distance - ($distance * ((100 - $percentage *= 100) / 100));
-        $ratio = $travelDistance / $distance;
         return Color::withLab(
-            $this->Lab->L + ($ratio * ($color->Lab->L - $this->Lab->L)),
-            $this->Lab->a + ($ratio * ($color->Lab->a - $this->Lab->a)),
-            $this->Lab->b + ($ratio * ($color->Lab->b - $this->Lab->b))
+            $this->Lab->L + ($percentage * ($color->Lab->L - $this->Lab->L)),
+            $this->Lab->a + ($percentage * ($color->Lab->a - $this->Lab->a)),
+            $this->Lab->b + ($percentage * ($color->Lab->b - $this->Lab->b))
         );
     }
 
