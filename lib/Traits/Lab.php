@@ -50,9 +50,9 @@ trait Lab {
         $xyz = $this->_XYZ;
 
         $xyz = [
-            $xyz->x / Color::ILLUMINANT_D50[0],
-            $xyz->y / Color::ILLUMINANT_D50[1],
-            $xyz->z / Color::ILLUMINANT_D50[2]
+            $xyz->X / Color::ILLUMINANT_D50[0],
+            $xyz->Y / Color::ILLUMINANT_D50[1],
+            $xyz->Z / Color::ILLUMINANT_D50[2]
         ];
 
         $xyz = array_map(function($n) {

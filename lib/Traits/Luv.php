@@ -47,9 +47,9 @@ trait Luv {
 
         $xyz = $this->_XYZ;
 
-        $yr = $xyz->y / Color::ILLUMINANT_D50[1];
-        $uPrime = (4 * $xyz->x) / ($xyz->x + 15 * $xyz->y + 3 * $xyz->z);
-        $vPrime = (9 * $xyz->y) / ($xyz->x + 15 * $xyz->y + 3 * $xyz->z);
+        $yr = $xyz->Y / Color::ILLUMINANT_D50[1];
+        $uPrime = (4 * $xyz->X) / ($xyz->X + 15 * $xyz->Y + 3 * $xyz->Z);
+        $vPrime = (9 * $xyz->Y) / ($xyz->X + 15 * $xyz->Y + 3 * $xyz->Z);
         $uPrimeR = (4 * Color::ILLUMINANT_D50[0]) / (Color::ILLUMINANT_D50[0] + 15 * Color::ILLUMINANT_D50[1] + 3 * Color::ILLUMINANT_D50[2]);
         $vPrimeR = (9 * Color::ILLUMINANT_D50[1]) / (Color::ILLUMINANT_D50[0] + 15 * Color::ILLUMINANT_D50[1] + 3 * Color::ILLUMINANT_D50[2]);
 

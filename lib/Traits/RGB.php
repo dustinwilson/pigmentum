@@ -143,7 +143,7 @@ trait RGB {
             return $this->_hex;
         }
 
-        $this->_hex = sprintf("#%02x%02x%02x", (int)round($this->_RGB->r), (int)round($this->_RGB->g), (int)round($this->_RGB->b));
+        $this->_hex = sprintf("#%02x%02x%02x", (int)round($this->_RGB->R), (int)round($this->_RGB->G), (int)round($this->_RGB->B));
         return $this->_hex;
     }
 
@@ -156,9 +156,9 @@ trait RGB {
             return $this->_hsb;
         }
 
-        $r = $this->RGB->r / 255;
-        $g = $this->_RGB->g / 255;
-        $b = $this->_RGB->b / 255;
+        $r = $this->RGB->R / 255;
+        $g = $this->_RGB->G / 255;
+        $b = $this->_RGB->B / 255;
 
         $max = max($r, $g, $b);
         $min = min($r, $g, $b);
@@ -204,13 +204,13 @@ trait RGB {
         $xyz = $this->_XYZ;
 
         if ($workingSpace::illuminant !== Color::ILLUMINANT_D50) {
-            $xyz = (new ColorSpaceXYZ($this->_XYZ->x, $this->_XYZ->y, $this->_XYZ->z))->chromaticAdaptation(Color::ILLUMINANT_D65, Color::ILLUMINANT_D50);
+            $xyz = (new ColorSpaceXYZ($this->_XYZ->X, $this->_XYZ->Y, $this->_XYZ->Z))->chromaticAdaptation(Color::ILLUMINANT_D65, Color::ILLUMINANT_D50);
         } else {
             $xyz = $this->_XYZ;
         }
 
         $matrix = $workingSpace::getXYZMatrix()->inverse();
-        $uncompandedVector = $matrix->vectorMultiply(new Vector([ $xyz->x, $xyz->y, $xyz->z ]));
+        $uncompandedVector = $matrix->vectorMultiply(new Vector([ $xyz->X, $xyz->Y, $xyz->Z ]));
 
         $this->_RGB = new ColorSpaceRGB(
             min(max($workingSpace::companding($uncompandedVector[0]) * 255, 0), 255),

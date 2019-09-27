@@ -4,9 +4,9 @@ namespace dW\Pigmentum\ColorSpace;
 use MathPHP\LinearAlgebra\Matrix as Matrix;
 
 class XYZ extends AbstractSpace {
-    protected $_x;
-    protected $_y;
-    protected $_z;
+    protected $_X;
+    protected $_Y;
+    protected $_Z;
 
     protected $_lms;
 
@@ -16,10 +16,10 @@ class XYZ extends AbstractSpace {
         [ 0.0389000, -0.0685000, 1.0296000 ]
     ];
 
-    public function __construct(float $x, float $y, float $z) {
-        $this->_x = $x;
-        $this->_y = $y;
-        $this->_z = $z;
+    public function __construct(float $X, float $Y, float $Z) {
+        $this->_X = $X;
+        $this->_Y = $Y;
+        $this->_Z = $Z;
     }
 
     protected function toLMS(): XYZ\LMS {
@@ -27,7 +27,7 @@ class XYZ extends AbstractSpace {
             return $this->_lms;
         }
 
-        $xyz = [ $this->_x, $this->_y, $this->_z ];
+        $xyz = [ $this->_X, $this->_Y, $this->_Z ];
         $result = array_map(function($m) use($xyz) {
             $out = 0;
             $count = 0;
@@ -57,11 +57,11 @@ class XYZ extends AbstractSpace {
 
         $m1 = $bradford->inverse()->multiply($mir);
         $m2 = $m1->multiply($bradford);
-        $xyz = $m2->multiply(new Matrix([ [$this->_x], [$this->_y], [$this->_z] ]));
+        $xyz = $m2->multiply(new Matrix([ [$this->_X], [$this->_Y], [$this->_Z] ]));
 
-        $this->_x = $xyz[0][0];
-        $this->_y = $xyz[1][0];
-        $this->_z = $xyz[2][0];
+        $this->_X = $xyz[0][0];
+        $this->_Y = $xyz[1][0];
+        $this->_Z = $xyz[2][0];
 
         return $this;
     }

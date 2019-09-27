@@ -18,8 +18,8 @@ class Color {
 
     protected $_XYZ;
 
-    private function __construct(float $x, float $y, float $z, array $props = []) {
-        $this->_XYZ = new ColorSpace\XYZ($x, $y, $z);
+    private function __construct(float $X, float $Y, float $Z, array $props = []) {
+        $this->_XYZ = new ColorSpace\XYZ($X, $Y, $Z);
 
         if ($props !== []) {
             foreach ($props as $key => $value) {
@@ -30,13 +30,13 @@ class Color {
     }
 
 
-    static function withXYZ(float $x, float $y, float $z): Color {
+    static function withXYZ(float $X, float $Y, float $Z): Color {
         // Can in some instances have values > 1. Illuminants are such an example.
-        $x = ($x < 0.0) ? 0.0 : $x;
-        $y = ($y < 0.0) ? 0.0 : $y;
-        $z = ($z < 0.0) ? 0.0 : $z;
+        $X = ($X < 0.0) ? 0.0 : $X;
+        $X = ($Y < 0.0) ? 0.0 : $Y;
+        $X = ($Z < 0.0) ? 0.0 : $Z;
 
-        return new self($x, $y, $z);
+        return new self($X, $Y, $Z);
     }
 
 
@@ -47,8 +47,8 @@ class Color {
         $bsum = 0;
         $length = sizeof($colors);
         foreach ($colors as $c) {
-            $rsum += $c->RGB->r;
-            $gsum += $c->RGB->g;
+            $rsum += $c->RGB->R;
+            $gsum += $c->RGB->G;
             $bsum += $c->RGB->b;
         }
 
@@ -64,8 +64,8 @@ class Color {
         $matrixA = $wsA::getXYZMatrix()[1];
         $matrixB = $wsB::getXYZMatrix()[1];
 
-        $a = $matrixA[0] * $wsA::inverseCompanding($RGBa->r / 255) + $matrixA[1] * $wsA::inverseCompanding($RGBa->g / 255) + $matrixA[2] * $wsA::inverseCompanding($RGBa->b / 255);
-        $b = $matrixB[0] * $wsB::inverseCompanding($RGBb->r / 255) + $matrixB[1] * $wsB::inverseCompanding($RGBb->g / 255) + $matrixB[2] * $wsB::inverseCompanding($RGBb->b / 255);
+        $a = $matrixA[0] * $wsA::inverseCompanding($RGBa->R / 255) + $matrixA[1] * $wsA::inverseCompanding($RGBa->G / 255) + $matrixA[2] * $wsA::inverseCompanding($RGBa->B / 255);
+        $b = $matrixB[0] * $wsB::inverseCompanding($RGBb->R / 255) + $matrixB[1] * $wsB::inverseCompanding($RGBb->G / 255) + $matrixB[2] * $wsB::inverseCompanding($RGBb->B / 255);
 
         $ratio = ($a + 0.05) / ($b + 0.05);
         return ($a > $b) ? $ratio : 1 / $ratio;
