@@ -78,4 +78,33 @@ trait Luv {
         $this->_LCHuv = new ColorSpaceLCHuv($this->_Luv->L, $c, $h);
         return $this->_LCHuv;
     }
+
+
+    public function mixWithLuv(Color $color, float $percentage = 0.5): Color {
+        if ($percentage == 0) {
+            return $this;
+        } elseif ($percentage == 1) {
+            return $color;
+        }
+
+        return Color::withLuv(
+            $this->Luv->L + ($percentage * ($color->Luv->L - $this->Luv->L)),
+            $this->Luv->u + ($percentage * ($color->Luv->u - $this->Luv->u)),
+            $this->Luv->v + ($percentage * ($color->Luv->v - $this->Luv->v))
+        );
+    }
+
+    public function mixWithLCHuv(Color $color, float $percentage = 0.5): Color {
+        if ($percentage == 0) {
+            return $this;
+        } elseif ($percentage == 1) {
+            return $color;
+        }
+
+        return Color::withLCHuv(
+            $this->LCHuv->L + ($percentage * ($color->LCHuv->L - $this->LCHuv->L)),
+            $this->LCHuv->C + ($percentage * ($color->LCHuv->C - $this->LCHuv->C)),
+            $this->LCHuv->H + ($percentage * ($color->LCHuv->H - $this->LCHuv->H))
+        );
+    }
 }

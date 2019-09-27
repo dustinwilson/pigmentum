@@ -223,4 +223,33 @@ trait RGB {
 
         return $this->_RGB;
     }
+
+
+    public function mixWithRGB(Color $color, float $percentage = 0.5): Color {
+        if ($percentage == 0) {
+            return $this;
+        } elseif ($percentage == 1) {
+            return $color;
+        }
+
+        return Color::withRGB(
+            $this->RGB->R + ($percentage * ($color->RGB->R - $this->RGB->R)),
+            $this->RGB->G + ($percentage * ($color->RGB->G - $this->RGB->G)),
+            $this->RGB->B + ($percentage * ($color->RGB->B - $this->RGB->B))
+        );
+    }
+
+    public function mixWithHSB(Color $color, float $percentage = 0.5): Color {
+        if ($percentage == 0) {
+            return $this;
+        } elseif ($percentage == 1) {
+            return $color;
+        }
+
+        return Color::withHSB(
+            $this->HSB->H + ($percentage * ($color->HSB->H - $this->HSB->H)),
+            $this->HSB->S + ($percentage * ($color->HSB->S - $this->HSB->S)),
+            $this->HSB->B + ($percentage * ($color->HSB->B - $this->HSB->B))
+        );
+    }
 }

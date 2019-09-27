@@ -71,22 +71,6 @@ class Color {
         return ($a > $b) ? $ratio : 1 / $ratio;
     }
 
-    // Mix with L*a*b*. Colors in this color space are perceptively uniform and are
-    // perfect for mixing.
-    public function mix(Color $color, float $percentage = 0.5): Color {
-        if ($percentage == 0) {
-            return $this;
-        } elseif ($percentage == 1) {
-            return $color;
-        }
-
-        return Color::withLab(
-            $this->Lab->L + ($percentage * ($color->Lab->L - $this->Lab->L)),
-            $this->Lab->a + ($percentage * ($color->Lab->a - $this->Lab->a)),
-            $this->Lab->b + ($percentage * ($color->Lab->b - $this->Lab->b))
-        );
-    }
-
     // Euclidean distance
     public function distance(Color $color): float {
         return sqrt(($color->Lab->L - $this->Lab->L) ** 2 + ($color->_Lab->a - $this->_Lab->a) ** 2 + ($color->_Lab->b - $this->_Lab->b) ** 2);

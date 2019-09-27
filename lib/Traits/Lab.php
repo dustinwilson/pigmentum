@@ -87,4 +87,39 @@ trait Lab {
         $this->_LCHab = new ColorSpaceLCHab($this->_Lab->L, $c, $h);
         return $this->_LCHab;
     }
+
+
+    public function mixWithLab(Color $color, float $percentage = 0.5): Color {
+        if ($percentage == 0) {
+            return $this;
+        } elseif ($percentage == 1) {
+            return $color;
+        }
+
+        return Color::withLab(
+            $this->Lab->L + ($percentage * ($color->Lab->L - $this->Lab->L)),
+            $this->Lab->a + ($percentage * ($color->Lab->a - $this->Lab->a)),
+            $this->Lab->b + ($percentage * ($color->Lab->b - $this->Lab->b))
+        );
+    }
+
+    // Mix with L*a*b* by default. Colors in this color space are perceptively
+    // uniform and are perfect for mixing.
+    public function mix(Color $color, float $percentage = 0.5): Color {
+        return Color::mixWithLab($color, $percentage);
+    }
+
+    public function mixWithLCHab(Color $color, float $percentage = 0.5): Color {
+        if ($percentage == 0) {
+            return $this;
+        } elseif ($percentage == 1) {
+            return $color;
+        }
+
+        return Color::withLCHab(
+            $this->LCHab->L + ($percentage * ($color->LCHab->L - $this->LCHab->L)),
+            $this->LCHab->C + ($percentage * ($color->LCHab->C - $this->LCHab->C)),
+            $this->LCHab->H + ($percentage * ($color->LCHab->H - $this->LCHab->H))
+        );
+    }
 }
