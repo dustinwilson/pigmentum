@@ -39,22 +39,6 @@ class Color {
         return new self($X, $Y, $Z);
     }
 
-
-    // Average with RGB.
-    public static function average(Color ...$colors): Color {
-        $rsum = 0;
-        $gsum = 0;
-        $bsum = 0;
-        $length = sizeof($colors);
-        foreach ($colors as $c) {
-            $rsum += $c->RGB->R;
-            $gsum += $c->RGB->G;
-            $bsum += $c->RGB->b;
-        }
-
-        return Color::withRGB($rsum / $length, $gsum / $length, $bsum / $length);
-    }
-
     // Calculates the WCAG contrast ratio between the color and a supplied one.
     public function contrastRatio(Color $color): float {
         $RGBa = $this->RGB;
@@ -69,15 +53,6 @@ class Color {
 
         $ratio = ($a + 0.05) / ($b + 0.05);
         return ($a > $b) ? $ratio : 1 / $ratio;
-    }
-
-    // Euclidean distance
-    public function distance(Color $color): float {
-        return sqrt(($color->Lab->L - $this->Lab->L) ** 2 + ($color->_Lab->a - $this->_Lab->a) ** 2 + ($color->_Lab->b - $this->_Lab->b) ** 2);
-    }
-
-    public function difference(Color $color): float {
-        return $this->deltaE($color);
     }
 
     // CIE2000 distance formula, takes perception into account when calculating
@@ -138,6 +113,15 @@ class Color {
 			($dCPrime / ($kC * $sC)) * ($dHPrime / ($kH * $sH)) * $rT
         );
     }
+
+    public function distance(Color $color): float {
+        return $this->deltaE($color);
+    }
+
+    public function euclideanDistance(Color $color): float {
+        return sqrt(($color->Lab->L - $this->Lab->L) ** 2 + ($color->_Lab->a - $this->_Lab->a) ** 2 + ($color->_Lab->b - $this->_Lab->b) ** 2);
+    }
+
 
     public function __get($property) {
         $prop = "_$property";

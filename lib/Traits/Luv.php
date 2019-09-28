@@ -80,6 +80,21 @@ trait Luv {
     }
 
 
+    public static function averageWithLuv(Color ...$colors): Color {
+        $aSum = 0;
+        $bSum = 0;
+        $cSum = 0;
+        $length = sizeof($colors);
+
+        foreach ($colors as $c) {
+            $aSum += $c->Luv->L;
+            $bSum += $c->Luv->u;
+            $cSum += $c->Luv->v;
+        }
+
+        return Color::withLuv($aSum / $length, $bSum / $length, $cSum / $length);
+    }
+
     public function mixWithLuv(Color $color, float $percentage = 0.5): Color {
         if ($percentage == 0) {
             return $this;
@@ -92,6 +107,21 @@ trait Luv {
             $this->Luv->u + ($percentage * ($color->Luv->u - $this->Luv->u)),
             $this->Luv->v + ($percentage * ($color->Luv->v - $this->Luv->v))
         );
+    }
+
+    public static function averageWithLCHuv(Color ...$colors): Color {
+        $aSum = 0;
+        $bSum = 0;
+        $cSum = 0;
+        $length = sizeof($colors);
+
+        foreach ($colors as $c) {
+            $aSum += $c->LCHuv->L;
+            $bSum += $c->LCHuv->C;
+            $cSum += $c->LCHuv->H;
+        }
+
+        return Color::withLCHuv($aSum / $length, $bSum / $length, $cSum / $length);
     }
 
     public function mixWithLCHuv(Color $color, float $percentage = 0.5): Color {

@@ -225,6 +225,25 @@ trait RGB {
     }
 
 
+    public static function averageWithRGB(Color ...$colors): Color {
+        $aSum = 0;
+        $bSum = 0;
+        $cSum = 0;
+        $length = sizeof($colors);
+
+        foreach ($colors as $c) {
+            $aSum += $c->RGB->R;
+            $bSum += $c->RGB->G;
+            $cSum += $c->RGB->B;
+        }
+
+        return Color::withRGB($aSum / $length, $bSum / $length, $cSum / $length);
+    }
+
+    public static function average(Color ...$colors): Color {
+        return Color::averageWithRGB(...$colors);
+    }
+
     public function mixWithRGB(Color $color, float $percentage = 0.5): Color {
         if ($percentage == 0) {
             return $this;
@@ -237,6 +256,21 @@ trait RGB {
             $this->RGB->G + ($percentage * ($color->RGB->G - $this->RGB->G)),
             $this->RGB->B + ($percentage * ($color->RGB->B - $this->RGB->B))
         );
+    }
+
+    public static function averageWithHSB(Color ...$colors): Color {
+        $aSum = 0;
+        $bSum = 0;
+        $cSum = 0;
+        $length = sizeof($colors);
+
+        foreach ($colors as $c) {
+            $aSum += $c->HSB->H;
+            $bSum += $c->HSB->S;
+            $cSum += $c->HSB->B;
+        }
+
+        return Color::withHSB($aSum / $length, $bSum / $length, $cSum / $length);
     }
 
     public function mixWithHSB(Color $color, float $percentage = 0.5): Color {

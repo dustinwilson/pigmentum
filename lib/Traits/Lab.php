@@ -88,6 +88,20 @@ trait Lab {
         return $this->_LCHab;
     }
 
+    public static function averageWithLab(Color ...$colors): Color {
+        $aSum = 0;
+        $bSum = 0;
+        $cSum = 0;
+        $length = sizeof($colors);
+
+        foreach ($colors as $c) {
+            $aSum += $c->Lab->L;
+            $bSum += $c->Lab->a;
+            $cSum += $c->Lab->b;
+        }
+
+        return Color::withLab($aSum / $length, $bSum / $length, $cSum / $length);
+    }
 
     public function mixWithLab(Color $color, float $percentage = 0.5): Color {
         if ($percentage == 0) {
@@ -107,6 +121,21 @@ trait Lab {
     // uniform and are perfect for mixing.
     public function mix(Color $color, float $percentage = 0.5): Color {
         return Color::mixWithLab($color, $percentage);
+    }
+
+    public static function averageWithLCHab(Color ...$colors): Color {
+        $aSum = 0;
+        $bSum = 0;
+        $cSum = 0;
+        $length = sizeof($colors);
+
+        foreach ($colors as $c) {
+            $aSum += $c->LCHab->L;
+            $bSum += $c->LCHab->C;
+            $cSum += $c->LCHab->H;
+        }
+
+        return Color::withLCHab($aSum / $length, $bSum / $length, $cSum / $length);
     }
 
     public function mixWithLCHab(Color $color, float $percentage = 0.5): Color {
