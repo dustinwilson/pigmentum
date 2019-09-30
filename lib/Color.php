@@ -16,7 +16,7 @@ class Color {
     const KAPPA = 903.296296296296296;
     const EPSILON = 0.008856451679036;
 
-    protected $_XYZ;
+    private $_XYZ;
 
     private function __construct(float $X, float $Y, float $Z, array $props = []) {
         $this->_XYZ = new ColorSpace\XYZ($X, $Y, $Z);
@@ -38,6 +38,7 @@ class Color {
 
         return new self($X, $Y, $Z);
     }
+
 
     // Calculates the WCAG contrast ratio between the color and a supplied one.
     public function contrastRatio(Color $color): float {

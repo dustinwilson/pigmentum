@@ -131,10 +131,26 @@ trait Luv {
             return $color;
         }
 
+        $aL = $this->LCHuv->L;
+        $aC = $this->LCHuv->C;
+        $aH = $this->LCHuv->H;
+        $bL = $color->LCHuv->L;
+        $bC = $color->LCHuv->C;
+        $bH = $color->LCHuv->H;
+
+        // If the chroma is 0 then the hue doesn't matter. The color is grey,
+        // so to keep mixing from going across the entire hue range in some
+        // cases...
+        if ($aC == 0) {
+            $aH = $bH;
+        } elseif ($bC == 0) {
+            $bH = $aH;
+        }
+
         return Color::withLCHuv(
-            $this->LCHuv->L + ($percentage * ($color->LCHuv->L - $this->LCHuv->L)),
-            $this->LCHuv->C + ($percentage * ($color->LCHuv->C - $this->LCHuv->C)),
-            $this->LCHuv->H + ($percentage * ($color->LCHuv->H - $this->LCHuv->H))
+            $aL + ($percentage * ($bL - $aL)),
+            $aC + ($percentage * ($bC - $aC)),
+            $aH + ($percentage * ($bH - $aH))
         );
     }
 }

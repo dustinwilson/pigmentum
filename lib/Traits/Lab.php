@@ -145,10 +145,26 @@ trait Lab {
             return $color;
         }
 
+        $aL = $this->LCHab->L;
+        $aC = $this->LCHab->C;
+        $aH = $this->LCHab->H;
+        $bL = $color->LCHab->L;
+        $bC = $color->LCHab->C;
+        $bH = $color->LCHab->H;
+
+        // If the chroma is 0 then the hue doesn't matter. The color is grey,
+        // so to keep mixing from going across the entire hue range in some
+        // cases...
+        if ($aC == 0) {
+            $aH = $bH;
+        } elseif ($bC == 0) {
+            $bH = $aH;
+        }
+
         return Color::withLCHab(
-            $this->LCHab->L + ($percentage * ($color->LCHab->L - $this->LCHab->L)),
-            $this->LCHab->C + ($percentage * ($color->LCHab->C - $this->LCHab->C)),
-            $this->LCHab->H + ($percentage * ($color->LCHab->H - $this->LCHab->H))
+            $aL + ($percentage * ($bL - $aL)),
+            $aC + ($percentage * ($bC - $aC)),
+            $aH + ($percentage * ($bH - $aH))
         );
     }
 }
