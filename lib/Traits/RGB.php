@@ -280,10 +280,39 @@ trait RGB {
             return $color;
         }
 
+        $aH = $this->HSB->H;
+        $aS = $this->HSB->S;
+        $aB = $this->HSB->B;
+        $bH = $color->HSB->H;
+        $bS = $color->HSB->S;
+        $bB = $color->HSB->B;
+
+        // If the saturation is 0 then the hue doesn't matter. The color is
+        // grey, so to keep mixing from going across the entire hue range in
+        // some cases...
+        if ($aS == 0) {
+            $aH = $bH;
+        } elseif ($bS == 0) {
+            $bH = $aH;
+        }
+        // Hue is a circle mathematically represented in 360 degrees from 0 to
+        // 359. This means that the shortest distance isn't always positive and
+        // sometimes going backwards is the correct way to mix.
+        elseif (abs($bH - $aH) > 180) {
+            if ($aH > $bH) {
+                $bH += 360;
+            } else {
+                $aH += 360;
+            }
+        }
+
+        $H = $aH + ($percentage * ($bH - $aH));
+        $H = ($H > 359) ? $H - 360 : $H;
+
         return Color::withHSB(
-            $this->HSB->H + ($percentage * ($color->HSB->H - $this->HSB->H)),
-            $this->HSB->S + ($percentage * ($color->HSB->S - $this->HSB->S)),
-            $this->HSB->B + ($percentage * ($color->HSB->B - $this->HSB->B))
+            $H,
+            $aS + ($percentage * ($bS - $aS)),
+            $aB + ($percentage * ($bB - $aB))
         );
     }
 }

@@ -160,11 +160,24 @@ trait Lab {
         } elseif ($bC == 0) {
             $bH = $aH;
         }
+        // Hue is a circle mathematically represented in 360 degrees from 0 to
+        // 359. This means that the shortest distance isn't always positive and
+        // sometimes going backwards is the correct way to mix.
+        elseif (abs($bH - $aH) > 180) {
+            if ($aH > $bH) {
+                $bH += 360;
+            } else {
+                $aH += 360;
+            }
+        }
+
+        $H = $aH + ($percentage * ($bH - $aH));
+        $H = ($H > 359) ? $H - 360 : $H;
 
         return Color::withLCHab(
             $aL + ($percentage * ($bL - $aL)),
             $aC + ($percentage * ($bC - $aC)),
-            $aH + ($percentage * ($bH - $aH))
+            $H
         );
     }
 }
