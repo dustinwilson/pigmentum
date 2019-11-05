@@ -11,7 +11,7 @@ trait Lab {
     protected $_Lab;
     protected $_LCHab;
 
-    private static function _withLab(float $L, float $a, float $b, ColorSpaceLCHab $LCHab = null): Color {
+    private static function _withLab(float $L, float $a, float $b, ?string $name = null, ?ColorSpaceLCHab $LCHab = null): Color {
         $L = min(max($L, 0), 100);
         $a = min(max($a, -128), 127);
         $b = min(max($b, -128), 127);
@@ -27,19 +27,19 @@ trait Lab {
         $yr = ($L > Color::KAPPA * Color::EPSILON) ? (($L + 16.0) / 116.0) ** 3 : $L / self::KAPPA;
         $zr = ($fz3 > Color::EPSILON) ? $fz3 : (116.0 * $fz - 16.0) / Color::KAPPA;
 
-        return new self($xr * Color::ILLUMINANT_D50[0], $yr * Color::ILLUMINANT_D50[1], $zr * Color::ILLUMINANT_D50[2], [
+        return new self($xr * Color::ILLUMINANT_D50[0], $yr * Color::ILLUMINANT_D50[1], $zr * Color::ILLUMINANT_D50[2], $name, [
             'Lab' => new ColorSpaceLab($L, $a, $b),
             'LCHab' => $LCHab
         ]);
     }
 
-    public static function withLab(float $L, float $a, float $b): Color {
-        return self::_withLab($L, $a, $b);
+    public static function withLab(float $L, float $a, float $b, ?string $name = null): Color {
+        return self::_withLab($L, $a, $b, $name);
     }
 
-    public static function withLCHab(float $L, float $C, float $H): Color {
+    public static function withLCHab(float $L, float $C, float $H, ?string $name = null): Color {
         $hh = deg2rad($H);
-        return self::_withLab($L, cos($hh) * $C, sin($hh) * $C, new ColorSpaceLCHab($L, $C, $H));
+        return self::_withLab($L, cos($hh) * $C, sin($hh) * $C, $name, new ColorSpaceLCHab($L, $C, $H));
     }
 
     public function toLab(): ColorSpaceLab {

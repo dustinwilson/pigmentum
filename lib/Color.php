@@ -16,10 +16,12 @@ class Color {
     const KAPPA = 903.296296296296296;
     const EPSILON = 0.008856451679036;
 
+    public $name;
     private $_XYZ;
 
-    private function __construct(float $X, float $Y, float $Z, array $props = []) {
+    private function __construct(float $X, float $Y, float $Z, ?string $name, array $props = []) {
         $this->_XYZ = new ColorSpace\XYZ($X, $Y, $Z);
+        $this->name = $name;
 
         if ($props !== []) {
             foreach ($props as $key => $value) {
@@ -30,13 +32,13 @@ class Color {
     }
 
 
-    static function withXYZ(float $X, float $Y, float $Z): Color {
+    static function withXYZ(float $X, float $Y, float $Z, string $name = null): Color {
         // Can in some instances have values > 1. Illuminants are such an example.
         $X = ($X < 0.0) ? 0.0 : $X;
         $X = ($Y < 0.0) ? 0.0 : $Y;
         $X = ($Z < 0.0) ? 0.0 : $Z;
 
-        return new self($X, $Y, $Z);
+        return new self($X, $Y, $Z, $name);
     }
 
 

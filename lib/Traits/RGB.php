@@ -16,7 +16,7 @@ trait RGB {
     protected $_RGB;
 
 
-    static function withHex(string $hex, string $workingSpace = null): Color {
+    static function withHex(string $hex, ?string $name = null, ?string $workingSpace = null): Color {
         if (is_null($workingSpace)) {
             $workingSpace = self::$workingSpace;
         }
@@ -30,10 +30,10 @@ trait RGB {
         }
 
         list($r, $g, $b) = sscanf($hex, "#%02x%02x%02x");
-        return self::_withRGB($r, $g, $b, $workingSpace, $hex);
+        return self::_withRGB($r, $g, $b, $name, $workingSpace, $hex);
     }
 
-    static function withHSB(float $h, float $s, float $v, string $workingSpace = null): Color {
+    static function withHSB(float $h, float $s, float $v, ?string $name = null, ?string $workingSpace = null): Color {
         if (is_null($workingSpace)) {
             $workingSpace = self::$workingSpace;
         }
@@ -97,10 +97,10 @@ trait RGB {
             }
         }
 
-        return self::_withRGB($r, $g, $b, $workingSpace, null, new ColorSpaceHSB($h, $s, $v));
+        return self::_withRGB($r, $g, $b, $name, $workingSpace, null, new ColorSpaceHSB($h, $s, $v));
     }
 
-    private static function _withRGB(float $r, float $g, float $b, string $workingSpace = null, $hex = null, ColorSpaceHSB $hsb = null): Color {
+    private static function _withRGB(float $r, float $g, float $b, ?string $name = null, ?string $workingSpace = null, ?string $hex = null, ?ColorSpaceHSB $hsb = null): Color {
         if (is_null($workingSpace)) {
             $workingSpace = self::$workingSpace;
         }
@@ -116,7 +116,7 @@ trait RGB {
         ]);
 
         $xyz = ($workingSpace::getXYZMatrix())->vectorMultiply($vector);
-        $color = new self($xyz[0], $xyz[1], $xyz[2], [
+        $color = new self($xyz[0], $xyz[1], $xyz[2], $name, [
             'RGB' => new ColorSpaceRGB($r, $g, $b, $workingSpace),
             'Hex' => $hex,
             'HSB' => $hsb
@@ -129,8 +129,8 @@ trait RGB {
         return $color;
     }
 
-    public static function withRGB(float $r, float $g, float $b, string $workingSpace = null): Color {
-        return self::_withRGB($r, $g, $b, $workingSpace);
+    public static function withRGB(float $r, float $g, float $b, ?string $name = null, ?string $workingSpace = null): Color {
+        return self::_withRGB($r, $g, $b, $name, $workingSpace);
     }
 
 

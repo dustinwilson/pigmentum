@@ -11,7 +11,7 @@ trait Luv {
     protected $_Luv;
     protected $_LCHuv;
 
-    private static function _withLuv(float $L, float $u, float $v, ColorSpaceLCHuv $LCHuv = null): Color {
+    private static function _withLuv(float $L, float $u, float $v, ?string $name = null, ?ColorSpaceLCHuv $LCHuv = null): Color {
         $u0 = (4 * Color::ILLUMINANT_D50[0]) / (Color::ILLUMINANT_D50[0] + 15 * Color::ILLUMINANT_D50[1] + 3 * Color::ILLUMINANT_D50[2]);
         $v0 = (9 * Color::ILLUMINANT_D50[0]) / (Color::ILLUMINANT_D50[0] + 15 * Color::ILLUMINANT_D50[1] + 3 * Color::ILLUMINANT_D50[2]);
 
@@ -25,19 +25,19 @@ trait Luv {
         $X = ($d - $b) / ($a - $c);
         $Z = $X * ($a + $b);
 
-        return new self($X, $Y, $Z, [
+        return new self($X, $Y, $Z, $name, [
             'Luv' => new ColorSpaceLuv($L, $u, $v),
             'LCHuv' => $LCHuv
         ]);
     }
 
-    public static function withLuv(float $L, float $u, float $v): Color {
-        return self::_withLuv($L, $u, $v);
+    public static function withLuv(float $L, float $u, float $v, ?string $name = null): Color {
+        return self::_withLuv($L, $u, $v, $name);
     }
 
-    private static function withLCHuv(float $L, float $C, float $H): Color {
+    private static function withLCHuv(float $L, float $C, float $H, ?string $name = null): Color {
         $hh = deg2rad($H);
-        return self::_withLuv($L, cos($hh) * $C, sin($hh) * $C, new ColorSpaceLCHuv($L, $C, $H));
+        return self::_withLuv($L, cos($hh) * $C, sin($hh) * $C, $name, new ColorSpaceLCHuv($L, $C, $H));
     }
 
     public function toLuv(): ColorSpaceLuv {
