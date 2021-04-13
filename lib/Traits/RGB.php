@@ -203,21 +203,34 @@ trait RGB {
 
         $xyz = $this->_XYZ;
 
-        if ($workingSpace::illuminant !== Color::ILLUMINANT_D50) {
-            $xyz = (new ColorSpaceXYZ($this->_XYZ->X, $this->_XYZ->Y, $this->_XYZ->Z))->chromaticAdaptation(Color::ILLUMINANT_D65, Color::ILLUMINANT_D50);
+        // If the XYZ value is within 5 decimal points of D50 (illuminant used by this
+        // implementation's XYZ) then it should be treated as white, otherwise convert it.
+        if (array_map(function($n) {
+            return round($n, 5);
+        }, [ $xyz->X, $xyz->Y, $xyz->Z ]) == Color::ILLUMINANT_D50) {
+            $this->_RGB = new ColorSpaceRGB(
+                255,
+                255,
+                255,
+                $workingSpace
+            );
         } else {
-            $xyz = $this->_XYZ;
+            if ($workingSpace::illuminant !== Color::ILLUMINANT_D50) {
+                $xyz = (new ColorSpaceXYZ($this->_XYZ->X, $this->_XYZ->Y, $this->_XYZ->Z))->chromaticAdaptation(Color::ILLUMINANT_D65, Color::ILLUMINANT_D50);
+            } else {
+                $xyz = $this->_XYZ;
+            }
+
+            $matrix = $workingSpace::getXYZMatrix()->inverse();
+            $uncompandedVector = $matrix->vectorMultiply(new Vector([ $xyz->X, $xyz->Y, $xyz->Z ]));
+
+            $this->_RGB = new ColorSpaceRGB(
+                min(max($workingSpace::companding($uncompandedVector[0]) * 255, 0), 255),
+                min(max($workingSpace::companding($uncompandedVector[1]) * 255, 0), 255),
+                min(max($workingSpace::companding($uncompandedVector[2]) * 255, 0), 255),
+                $workingSpace
+            );
         }
-
-        $matrix = $workingSpace::getXYZMatrix()->inverse();
-        $uncompandedVector = $matrix->vectorMultiply(new Vector([ $xyz->X, $xyz->Y, $xyz->Z ]));
-
-        $this->_RGB = new ColorSpaceRGB(
-            min(max($workingSpace::companding($uncompandedVector[0]) * 255, 0), 255),
-            min(max($workingSpace::companding($uncompandedVector[1]) * 255, 0), 255),
-            min(max($workingSpace::companding($uncompandedVector[2]) * 255, 0), 255),
-            $workingSpace
-        );
 
         $this->_Hex = null;
 

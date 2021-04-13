@@ -49,6 +49,8 @@ trait Lab {
 
         $xyz = $this->_XYZ;
 
+        $xr = $this->_XYZ / Color::ILLUMINANT_D50[0];
+
         $xyz = [
             $xyz->X / Color::ILLUMINANT_D50[0],
             $xyz->Y / Color::ILLUMINANT_D50[1],
@@ -56,16 +58,12 @@ trait Lab {
         ];
 
         $xyz = array_map(function($n) {
-            if ($n > Color::EPSILON) {
-                return $n ** (1/3);
-            } else {
-                return (Color::KAPPA * $n + 16.0) / 116.0;
-            }
+            return ($n > Color::EPSILON) ? $n ** (1/3) : (Color::KAPPA * $n + 16) / 116;
         }, $xyz);
 
-        $L = round(116 * $xyz[1] - 16, 5);
-        $a = round(500 * ($xyz[0] - $xyz[1]), 5);
-        $b = round(200 * ($xyz[1] - $xyz[2]), 5);
+        $L = 116 * $xyz[1] - 16;
+        $a = 500 * ($xyz[0] - $xyz[1]);
+        $b = 200 * ($xyz[1] - $xyz[2]);
 
         // Combat issues where -0 would interfere in math down the road.
         $this->_Lab = new ColorSpaceLab(($L == -0) ? 0 : $L, ($a == -0) ? 0 : $a, ($b == -0) ? 0 : $b);

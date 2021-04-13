@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace dW\Pigmentum\WorkingSpace;
+namespace dW\Pigmentum\WorkingSpace\RGB;
 use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 

@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace dW\Pigmentum\WorkingSpace\RGB;
 
-abstract class sRGB extends \dW\Pigmentum\WorkingSpace\AbstractRGB {
+abstract class sRGB extends \dW\Pigmentum\WorkingSpace\RGB\AbstractRGB {
     const chromaticity = [
         [ 0.6400, 0.3300 ],
         [ 0.3000, 0.6000 ],
