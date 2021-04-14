@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace dW\Pigmentum\ColorSpace;
 
 abstract class ColorSpace {
-    public function __get($property) {
+    public function __get(string $property) {
         $prop = "_$property";
         if (property_exists($this, $prop)) {
             if (is_null($this->$prop)) {

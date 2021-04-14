@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace dW\Pigmentum\WorkingSpace\RGB;
+namespace dW\Pigmentum\Profile\RGB;
 
-abstract class sRGB extends \dW\Pigmentum\WorkingSpace\RGB {
+abstract class sRGB extends \dW\Pigmentum\Profile\RGB {
     const chromaticity = [
         [ 0.6400, 0.3300 ],
         [ 0.3000, 0.6000 ],

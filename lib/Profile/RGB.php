@@ -1,13 +1,15 @@
 <?php
 declare(strict_types=1);
-namespace dW\Pigmentum\WorkingSpace\RGB;
+namespace dW\Pigmentum\Profile;
+use dW\Pigmentum\Color as Color;
 use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
-abstract class RGB extends \dW\Pigmentum\WorkingSpace {
-    const illuminant = \dW\Pigmentum\Color::ILLUMINANT_D65;
+abstract class RGB extends \dW\Pigmentum\Profile\Profile {
+    const illuminant = Color::ILLUMINANT_D65;
     const chromaticity = [];
     const gamma = 2.2;
+    const mode = 'RGB';
 
     // Gamma companding
     public static function companding(float $channel): float {

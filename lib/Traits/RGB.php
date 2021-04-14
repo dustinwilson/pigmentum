@@ -5,21 +5,18 @@ use dW\Pigmentum\Color as Color;
 use dW\Pigmentum\ColorSpace\RGB\HSB as ColorSpaceHSB;
 use dW\Pigmentum\ColorSpace\RGB as ColorSpaceRGB;
 use dW\Pigmentum\ColorSpace\XYZ as ColorSpaceXYZ;
-use dW\Pigmentum\WorkingSpace as WorkingSpace;
 use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
 trait RGB {
-    public static $rgbWorkingSpace = WorkingSpace\RGB\sRGB::class;
-
     protected $_Hex;
     protected $_HSB;
     protected $_RGB;
 
 
-    static function withHex(string $hex, ?string $name = null, ?WorkingSpace $workingSpace = null): Color {
-        if (is_null($workingSpace)) {
-            $workingSpace = self::$rgbWorkingSpace;
+    static function withHex(string $hex, ?string $name = null, int $profile = -1): Color {
+        if ($profile === -1) {
+            $profile = self::$workingSpaceRGB;
         }
 
         if (strpos($hex, '#') !== 0) {
@@ -31,14 +28,10 @@ trait RGB {
         }
 
         list($r, $g, $b) = sscanf($hex, "#%02x%02x%02x");
-        return self::_withRGB($r, $g, $b, $name, $workingSpace, $hex);
+        return self::_withRGB($r, $g, $b, $name, $profile, $hex);
     }
 
-    static function withHSB(float $h, float $s, float $v, ?string $name = null, ?WorkingSpace $workingSpace = null): Color {
-        if (is_null($workingSpace)) {
-            $workingSpace = self::$rgbWorkingSpace;
-        }
-
+    static function withHSB(float $h, float $s, float $v, ?string $name = null, int $profile = -1): Color {
         $ss = $s / 100;
         $vv = $v / 100 * 255;
 
@@ -98,40 +91,44 @@ trait RGB {
             }
         }
 
-        return self::_withRGB($r, $g, $b, $name, $workingSpace, null, new ColorSpaceHSB($h, $s, $v));
+        return self::_withRGB($r, $g, $b, $name, $profile, null, new ColorSpaceHSB($h, $s, $v));
     }
 
-    private static function _withRGB(float $r, float $g, float $b, ?string $name = null, ?WorkingSpace $workingSpace = null, ?string $hex = null, ?ColorSpaceHSB $hsb = null): Color {
-        if (is_null($workingSpace)) {
-            $workingSpace = self::$rgbWorkingSpace;
+    private static function _withRGB(float $r, float $g, float $b, ?string $name = null, int $profile = -1, ?string $hex = null, ?ColorSpaceHSB $hsb = null): Color {
+        if ($profile === -1) {
+            $profile = self::$workingSpaceRGB;
         }
+        $profileClass = self::getProfileClassString($profile);
 
         $r = min(max($r, 0), 255);
         $g = min(max($g, 0), 255);
         $b = min(max($b, 0), 255);
 
         $vector = new Vector([
-            $workingSpace::inverseCompanding($r / 255),
-            $workingSpace::inverseCompanding($g / 255),
-            $workingSpace::inverseCompanding($b / 255)
+            $profileClass::inverseCompanding($r / 255),
+            $profileClass::inverseCompanding($g / 255),
+            $profileClass::inverseCompanding($b / 255)
         ]);
 
-        $xyz = ($workingSpace::getXYZMatrix())->vectorMultiply($vector);
+        $xyz = ($profileClass::getXYZMatrix())->vectorMultiply($vector);
         $color = new self($xyz[0], $xyz[1], $xyz[2], $name, [
-            'RGB' => new ColorSpaceRGB($r, $g, $b, $workingSpace),
+            'RGB' => new ColorSpaceRGB($r, $g, $b, $profile),
             'Hex' => $hex,
             'HSB' => $hsb
         ]);
 
-        if ($workingSpace::illuminant !== self::REFERENCE_WHITE) {
-            $color->XYZ->chromaticAdaptation(self::REFERENCE_WHITE, $workingSpace::illuminant);
+        if ($profileClass::illuminant !== self::REFERENCE_WHITE) {
+            $color->XYZ->chromaticAdaptation(self::REFERENCE_WHITE, $profileClass::illuminant);
         }
 
         return $color;
     }
 
-    public static function withRGB(float $r, float $g, float $b, ?string $name = null, ?WorkingSpace $workingSpace = null): Color {
-        return self::_withRGB($r, $g, $b, $name, $workingSpace);
+    public static function withRGB(float $r, float $g, float $b, ?string $name = null, int $profile = -1): Color {
+        if ($profile === -1) {
+            $profile = self::$workingSpaceRGB;
+        }
+        return self::_withRGB($r, $g, $b, $name, $profile);
     }
 
 
@@ -197,11 +194,11 @@ trait RGB {
     }
 
 
-    public function toRGB(?WorkingSpace $workingSpace = null): ColorSpaceRGB {
-        if (is_null($workingSpace)) {
-            $workingSpace = self::$rgbWorkingSpace;
+    public function toRGB(int $profile = -1): ColorSpaceRGB {
+        if ($profile === -1) {
+            $profile = self::$workingSpaceRGB;
         }
-
+        $profileClass = self::getProfileClassString($profile);
         $xyz = $this->_XYZ;
 
         // If the XYZ value is within 5 decimal points of D50 (illuminant used by this
@@ -213,23 +210,23 @@ trait RGB {
                 255,
                 255,
                 255,
-                $workingSpace
+                $profile
             );
         } else {
-            if ($workingSpace::illuminant !== self::REFERENCE_WHITE) {
+            if ($profileClass::illuminant !== self::REFERENCE_WHITE) {
                 $xyz = (new ColorSpaceXYZ($this->_XYZ->X, $this->_XYZ->Y, $this->_XYZ->Z))->chromaticAdaptation(self::ILLUMINANT_D65, self::REFERENCE_WHITE);
             } else {
                 $xyz = $this->_XYZ;
             }
 
-            $matrix = $workingSpace::getXYZMatrix()->inverse();
+            $matrix = $profileClass::getXYZMatrix()->inverse();
             $uncompandedVector = $matrix->vectorMultiply(new Vector([ $xyz->X, $xyz->Y, $xyz->Z ]));
 
             $this->_RGB = new ColorSpaceRGB(
-                min(max($workingSpace::companding($uncompandedVector[0]) * 255, 0), 255),
-                min(max($workingSpace::companding($uncompandedVector[1]) * 255, 0), 255),
-                min(max($workingSpace::companding($uncompandedVector[2]) * 255, 0), 255),
-                $workingSpace
+                min(max($profileClass::companding($uncompandedVector[0]) * 255, 0), 255),
+                min(max($profileClass::companding($uncompandedVector[1]) * 255, 0), 255),
+                min(max($profileClass::companding($uncompandedVector[2]) * 255, 0), 255),
+                $profile
             );
         }
 
@@ -328,5 +325,16 @@ trait RGB {
             $aS + ($percentage * ($bS - $aS)),
             $aB + ($percentage * ($bB - $aB))
         );
+    }
+
+    protected function changeProfileRGB(int $profile = -1): bool {
+        self::getProfileClassString($profile);
+
+        self::toRGB($profile);
+        if ($this->_HSB !== null) {
+            self::toHSB();
+        }
+
+        return true;
     }
 }

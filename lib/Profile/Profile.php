@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace dW\Pigmentum\WorkingSpace;
+namespace dW\Pigmentum\Profile;
 
-abstract class WorkingSpace {
+abstract class Profile {
     const illuminant = \dW\Pigmentum\Color::ILLUMINANT_D65;
     const chromaticity = [];
     const gamma = 1;

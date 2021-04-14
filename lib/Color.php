@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace dW\Pigmentum;
+use dW\Pigmentum\Profile as Profile;
 use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
@@ -17,10 +18,18 @@ class Color {
     const KAPPA = 903.296296296296296;
     const EPSILON = 0.008856451679036;
 
-    public $name;
-    private $_XYZ;
+    // RGB color profiles
+    const PROFILE_SRGB = 0;
+    const PROFILE_ADOBERGB1998 = 1;
+    const PROFILE_PROPHOTORGB = 2;
 
-    private function __construct(float $X, float $Y, float $Z, ?string $name, array $props = []) {
+    public $name;
+
+    public static $workingSpaceRGB = self::PROFILE_SRGB;
+
+    protected $_XYZ;
+
+    protected function __construct(float $X, float $Y, float $Z, ?string $name, array $props = []) {
         $this->_XYZ = new ColorSpace\XYZ($X, $Y, $Z);
         $this->name = $name;
 
@@ -136,5 +145,22 @@ class Color {
 
     public function __toString(): string {
         return $this->Hex;
+    }
+
+    protected function getProfileClassString(int $profile = -1, ?string $mode = 'RGB'): string {
+        switch ($mode) {
+            case 'RGB':
+                switch ($profile) {
+                    case self::PROFILE_SRGB: return Profile\RGB\sRGB::class;
+                    break;
+                    case self::PROFILE_ADOBERGB1998: return Profile\RGB\AdobeRGB1998::class;
+                    break;
+                    case self::PROFILE_PROPHOTORGB: return Profile\RGB\ProPhoto::class;
+                    break;
+                    default: throw new \Exception("Profile does not exist or is not supported by Pigmentum.\n");
+                }
+            break;
+            default: throw new \Exception("Invalid color mode.\n");
+        }
     }
 }
