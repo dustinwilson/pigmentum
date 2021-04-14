@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace dW\Pigmentum\ColorSpace\XYZ;
 
-class LMS extends \dW\Pigmentum\ColorSpace\AbstractSpace {
+class LMS extends \dW\Pigmentum\ColorSpace\ColorSpace {
     protected $_rho;
     protected $_gamma;
     protected $_beta;

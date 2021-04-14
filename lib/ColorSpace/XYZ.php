@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace dW\Pigmentum\ColorSpace;
 use MathPHP\LinearAlgebra\Matrix as Matrix;
 
-class XYZ extends AbstractSpace {
+class XYZ extends ColorSpace {
     protected $_X;
     protected $_Y;
     protected $_Z;
@@ -42,7 +42,7 @@ class XYZ extends AbstractSpace {
         return $this->_lms;
     }
 
-    // Bradford method of adaptation
+    // Bradford method of adaptation, seen as the most accurate to date.
     public function chromaticAdaptation(array $new, array $old): XYZ {
         $new = (new XYZ($new[0], $new[1], $new[2]))->toLMS();
         $old = (new XYZ($old[0], $old[1], $old[2]))->toLMS();

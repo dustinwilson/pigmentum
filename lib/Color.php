@@ -7,11 +7,12 @@ use MathPHP\LinearAlgebra\Vector as Vector;
 class Color {
     use Traits\RGB, Traits\Lab, Traits\Luv;
 
-    const WS_sRGB = '\dW\Pigmentum\WorkingSpace\RGB\sRGB';
-    const WS_ADOBERGB1998 = '\dW\Pigmentum\WorkingSpace\RGB\AdobeRGB1998';
-
     const ILLUMINANT_D65 = [ 0.95047, 1, 1.08883 ];
     const ILLUMINANT_D50 = [ 0.96422, 1, 0.82521 ];
+
+    // D50 is usually the reference white used for calculating XYZ values. Keeping a
+    // separate constant in anticipation of perhaps allowing changing of this.
+    const REFERENCE_WHITE = self::ILLUMINANT_D50;
 
     const KAPPA = 903.296296296296296;
     const EPSILON = 0.008856451679036;
@@ -33,12 +34,7 @@ class Color {
 
 
     static function withXYZ(float $X, float $Y, float $Z, string $name = null): Color {
-        // Can in some instances have values > 1. Illuminants are such an example.
-        $X = ($X < 0.0) ? 0.0 : $X;
-        $X = ($Y < 0.0) ? 0.0 : $Y;
-        $X = ($Z < 0.0) ? 0.0 : $Z;
-
-        return new self($X, $Y, $Z, $name);
+        return new self(min(0, $X), min(0, $Y), min(0, $Z), $name);
     }
 
 

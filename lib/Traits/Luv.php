@@ -12,10 +12,10 @@ trait Luv {
     protected $_LCHuv;
 
     private static function _withLuv(float $L, float $u, float $v, ?string $name = null, ?ColorSpaceLCHuv $LCHuv = null): Color {
-        $u0 = (4 * Color::ILLUMINANT_D50[0]) / (Color::ILLUMINANT_D50[0] + 15 * Color::ILLUMINANT_D50[1] + 3 * Color::ILLUMINANT_D50[2]);
-        $v0 = (9 * Color::ILLUMINANT_D50[0]) / (Color::ILLUMINANT_D50[0] + 15 * Color::ILLUMINANT_D50[1] + 3 * Color::ILLUMINANT_D50[2]);
+        $u0 = (4 * self::REFERENCE_WHITE[0]) / (self::REFERENCE_WHITE[0] + 15 * self::REFERENCE_WHITE[1] + 3 * self::REFERENCE_WHITE[2]);
+        $v0 = (9 * self::REFERENCE_WHITE[0]) / (self::REFERENCE_WHITE[0] + 15 * self::REFERENCE_WHITE[1] + 3 * self::REFERENCE_WHITE[2]);
 
-        $Y = ($L > Color::KAPPA * Color::EPSILON) ? (($L + 16.0) / 116.0) ** 3 : $L / self::KAPPA;
+        $Y = ($L > self::KAPPA * self::EPSILON) ? (($L + 16.0) / 116.0) ** 3 : $L / self::KAPPA;
 
         $a = (1 / 3) * ((52 * $L / ($u + 13 * $L * $u0)) - 1);
         $b = -5 * $Y;
@@ -47,13 +47,13 @@ trait Luv {
 
         $xyz = $this->_XYZ;
 
-        $yr = $xyz->Y / Color::ILLUMINANT_D50[1];
+        $yr = $xyz->Y / self::REFERENCE_WHITE[1];
         $uPrime = (4 * $xyz->X) / ($xyz->X + 15 * $xyz->Y + 3 * $xyz->Z);
         $vPrime = (9 * $xyz->Y) / ($xyz->X + 15 * $xyz->Y + 3 * $xyz->Z);
-        $uPrimeR = (4 * Color::ILLUMINANT_D50[0]) / (Color::ILLUMINANT_D50[0] + 15 * Color::ILLUMINANT_D50[1] + 3 * Color::ILLUMINANT_D50[2]);
-        $vPrimeR = (9 * Color::ILLUMINANT_D50[1]) / (Color::ILLUMINANT_D50[0] + 15 * Color::ILLUMINANT_D50[1] + 3 * Color::ILLUMINANT_D50[2]);
+        $uPrimeR = (4 * self::REFERENCE_WHITE[0]) / (self::REFERENCE_WHITE[0] + 15 * self::REFERENCE_WHITE[1] + 3 * self::REFERENCE_WHITE[2]);
+        $vPrimeR = (9 * self::REFERENCE_WHITE[1]) / (self::REFERENCE_WHITE[0] + 15 * self::REFERENCE_WHITE[1] + 3 * self::REFERENCE_WHITE[2]);
 
-        $L = ($yr > Color::EPSILON) ? 116 * ($yr ** (1 / 3)) - 16 : Color::KAPPA * $yr;
+        $L = ($yr > self::EPSILON) ? 116 * ($yr ** (1 / 3)) - 16 : self::KAPPA * $yr;
         $u = round(13 * $L * ($uPrime - $uPrimeR), 5);
         $v = round(13 * $L * ($vPrime - $vPrimeR), 5);
         $L = round($L, 5);
@@ -92,7 +92,7 @@ trait Luv {
             $cSum += $c->Luv->v;
         }
 
-        return Color::withLuv($aSum / $length, $bSum / $length, $cSum / $length);
+        return self::withLuv($aSum / $length, $bSum / $length, $cSum / $length);
     }
 
     public function mixWithLuv(Color $color, float $percentage = 0.5): Color {
@@ -102,7 +102,7 @@ trait Luv {
             return $color;
         }
 
-        return Color::withLuv(
+        return self::withLuv(
             $this->Luv->L + ($percentage * ($color->Luv->L - $this->Luv->L)),
             $this->Luv->u + ($percentage * ($color->Luv->u - $this->Luv->u)),
             $this->Luv->v + ($percentage * ($color->Luv->v - $this->Luv->v))
@@ -121,7 +121,7 @@ trait Luv {
             $cSum += $c->LCHuv->H;
         }
 
-        return Color::withLCHuv($aSum / $length, $bSum / $length, $cSum / $length);
+        return self::withLCHuv($aSum / $length, $bSum / $length, $cSum / $length);
     }
 
     public function mixWithLCHuv(Color $color, float $percentage = 0.5): Color {
@@ -160,7 +160,7 @@ trait Luv {
         $H = $aH + ($percentage * ($bH - $aH));
         $H = ($H > 359) ? $H - 360 : $H;
 
-        return Color::withLCHuv(
+        return self::withLCHuv(
             $aL + ($percentage * ($bL - $aL)),
             $aC + ($percentage * ($bC - $aC)),
             $H

@@ -5,20 +5,21 @@ use dW\Pigmentum\Color as Color;
 use dW\Pigmentum\ColorSpace\RGB\HSB as ColorSpaceHSB;
 use dW\Pigmentum\ColorSpace\RGB as ColorSpaceRGB;
 use dW\Pigmentum\ColorSpace\XYZ as ColorSpaceXYZ;
+use dW\Pigmentum\WorkingSpace as WorkingSpace;
 use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
 trait RGB {
-    public static $workingSpace = self::WS_sRGB;
+    public static $rgbWorkingSpace = WorkingSpace\RGB\sRGB::class;
 
     protected $_Hex;
     protected $_HSB;
     protected $_RGB;
 
 
-    static function withHex(string $hex, ?string $name = null, ?string $workingSpace = null): Color {
+    static function withHex(string $hex, ?string $name = null, ?WorkingSpace $workingSpace = null): Color {
         if (is_null($workingSpace)) {
-            $workingSpace = self::$workingSpace;
+            $workingSpace = self::$rgbWorkingSpace;
         }
 
         if (strpos($hex, '#') !== 0) {
@@ -33,9 +34,9 @@ trait RGB {
         return self::_withRGB($r, $g, $b, $name, $workingSpace, $hex);
     }
 
-    static function withHSB(float $h, float $s, float $v, ?string $name = null, ?string $workingSpace = null): Color {
+    static function withHSB(float $h, float $s, float $v, ?string $name = null, ?WorkingSpace $workingSpace = null): Color {
         if (is_null($workingSpace)) {
-            $workingSpace = self::$workingSpace;
+            $workingSpace = self::$rgbWorkingSpace;
         }
 
         $ss = $s / 100;
@@ -100,9 +101,9 @@ trait RGB {
         return self::_withRGB($r, $g, $b, $name, $workingSpace, null, new ColorSpaceHSB($h, $s, $v));
     }
 
-    private static function _withRGB(float $r, float $g, float $b, ?string $name = null, ?string $workingSpace = null, ?string $hex = null, ?ColorSpaceHSB $hsb = null): Color {
+    private static function _withRGB(float $r, float $g, float $b, ?string $name = null, ?WorkingSpace $workingSpace = null, ?string $hex = null, ?ColorSpaceHSB $hsb = null): Color {
         if (is_null($workingSpace)) {
-            $workingSpace = self::$workingSpace;
+            $workingSpace = self::$rgbWorkingSpace;
         }
 
         $r = min(max($r, 0), 255);
@@ -122,14 +123,14 @@ trait RGB {
             'HSB' => $hsb
         ]);
 
-        if ($workingSpace::illuminant !== Color::ILLUMINANT_D50) {
-            $color->XYZ->chromaticAdaptation(Color::ILLUMINANT_D50, Color::ILLUMINANT_D65);
+        if ($workingSpace::illuminant !== self::REFERENCE_WHITE) {
+            $color->XYZ->chromaticAdaptation(self::REFERENCE_WHITE, $workingSpace::illuminant);
         }
 
         return $color;
     }
 
-    public static function withRGB(float $r, float $g, float $b, ?string $name = null, ?string $workingSpace = null): Color {
+    public static function withRGB(float $r, float $g, float $b, ?string $name = null, ?WorkingSpace $workingSpace = null): Color {
         return self::_withRGB($r, $g, $b, $name, $workingSpace);
     }
 
@@ -196,9 +197,9 @@ trait RGB {
     }
 
 
-    public function toRGB(string $workingSpace = null): ColorSpaceRGB {
+    public function toRGB(?WorkingSpace $workingSpace = null): ColorSpaceRGB {
         if (is_null($workingSpace)) {
-            $workingSpace = self::$workingSpace;
+            $workingSpace = self::$rgbWorkingSpace;
         }
 
         $xyz = $this->_XYZ;
@@ -207,7 +208,7 @@ trait RGB {
         // implementation's XYZ) then it should be treated as white, otherwise convert it.
         if (array_map(function($n) {
             return round($n, 5);
-        }, [ $xyz->X, $xyz->Y, $xyz->Z ]) == Color::ILLUMINANT_D50) {
+        }, [ $xyz->X, $xyz->Y, $xyz->Z ]) == self::REFERENCE_WHITE) {
             $this->_RGB = new ColorSpaceRGB(
                 255,
                 255,
@@ -215,8 +216,8 @@ trait RGB {
                 $workingSpace
             );
         } else {
-            if ($workingSpace::illuminant !== Color::ILLUMINANT_D50) {
-                $xyz = (new ColorSpaceXYZ($this->_XYZ->X, $this->_XYZ->Y, $this->_XYZ->Z))->chromaticAdaptation(Color::ILLUMINANT_D65, Color::ILLUMINANT_D50);
+            if ($workingSpace::illuminant !== self::REFERENCE_WHITE) {
+                $xyz = (new ColorSpaceXYZ($this->_XYZ->X, $this->_XYZ->Y, $this->_XYZ->Z))->chromaticAdaptation(self::ILLUMINANT_D65, self::REFERENCE_WHITE);
             } else {
                 $xyz = $this->_XYZ;
             }
@@ -250,11 +251,11 @@ trait RGB {
             $cSum += $c->RGB->B;
         }
 
-        return Color::withRGB($aSum / $length, $bSum / $length, $cSum / $length);
+        return self::withRGB($aSum / $length, $bSum / $length, $cSum / $length);
     }
 
     public static function average(Color ...$colors): Color {
-        return Color::averageWithRGB(...$colors);
+        return self::averageWithRGB(...$colors);
     }
 
     public function mixWithRGB(Color $color, float $percentage = 0.5): Color {
@@ -264,7 +265,7 @@ trait RGB {
             return $color;
         }
 
-        return Color::withRGB(
+        return self::withRGB(
             $this->RGB->R + ($percentage * ($color->RGB->R - $this->RGB->R)),
             $this->RGB->G + ($percentage * ($color->RGB->G - $this->RGB->G)),
             $this->RGB->B + ($percentage * ($color->RGB->B - $this->RGB->B))
@@ -283,7 +284,7 @@ trait RGB {
             $cSum += $c->HSB->B;
         }
 
-        return Color::withHSB($aSum / $length, $bSum / $length, $cSum / $length);
+        return self::withHSB($aSum / $length, $bSum / $length, $cSum / $length);
     }
 
     public function mixWithHSB(Color $color, float $percentage = 0.5): Color {
@@ -322,7 +323,7 @@ trait RGB {
         $H = $aH + ($percentage * ($bH - $aH));
         $H = ($H > 359) ? $H - 360 : $H;
 
-        return Color::withHSB(
+        return self::withHSB(
             $H,
             $aS + ($percentage * ($bS - $aS)),
             $aB + ($percentage * ($bB - $aB))

@@ -23,11 +23,11 @@ trait Lab {
         $fx3 = $fx ** 3;
         $fz3 = $fz ** 3;
 
-        $xr = ($fx3 > Color::EPSILON) ? $fx3 : (116.0 * $fx - 16.0) / Color::KAPPA;
-        $yr = ($L > Color::KAPPA * Color::EPSILON) ? (($L + 16.0) / 116.0) ** 3 : $L / self::KAPPA;
-        $zr = ($fz3 > Color::EPSILON) ? $fz3 : (116.0 * $fz - 16.0) / Color::KAPPA;
+        $xr = ($fx3 > self::EPSILON) ? $fx3 : (116.0 * $fx - 16.0) / self::KAPPA;
+        $yr = ($L > self::KAPPA * self::EPSILON) ? (($L + 16.0) / 116.0) ** 3 : $L / self::KAPPA;
+        $zr = ($fz3 > self::EPSILON) ? $fz3 : (116.0 * $fz - 16.0) / self::KAPPA;
 
-        return new self($xr * Color::ILLUMINANT_D50[0], $yr * Color::ILLUMINANT_D50[1], $zr * Color::ILLUMINANT_D50[2], $name, [
+        return new self($xr * self::REFERENCE_WHITE[0], $yr * self::REFERENCE_WHITE[1], $zr * self::REFERENCE_WHITE[2], $name, [
             'Lab' => new ColorSpaceLab($L, $a, $b),
             'LCHab' => $LCHab
         ]);
@@ -49,16 +49,16 @@ trait Lab {
 
         $xyz = $this->_XYZ;
 
-        $xr = $this->_XYZ / Color::ILLUMINANT_D50[0];
+        $xr = $this->_XYZ / self::REFERENCE_WHITE[0];
 
         $xyz = [
-            $xyz->X / Color::ILLUMINANT_D50[0],
-            $xyz->Y / Color::ILLUMINANT_D50[1],
-            $xyz->Z / Color::ILLUMINANT_D50[2]
+            $xyz->X / self::REFERENCE_WHITE[0],
+            $xyz->Y / self::REFERENCE_WHITE[1],
+            $xyz->Z / self::REFERENCE_WHITE[2]
         ];
 
         $xyz = array_map(function($n) {
-            return ($n > Color::EPSILON) ? $n ** (1/3) : (Color::KAPPA * $n + 16) / 116;
+            return ($n > self::EPSILON) ? $n ** (1/3) : (self::KAPPA * $n + 16) / 116;
         }, $xyz);
 
         $L = 116 * $xyz[1] - 16;
@@ -98,7 +98,7 @@ trait Lab {
             $cSum += $c->Lab->b;
         }
 
-        return Color::withLab($aSum / $length, $bSum / $length, $cSum / $length);
+        return self::withLab($aSum / $length, $bSum / $length, $cSum / $length);
     }
 
     public function mixWithLab(Color $color, float $percentage = 0.5): Color {
@@ -108,7 +108,7 @@ trait Lab {
             return $color;
         }
 
-        return Color::withLab(
+        return self::withLab(
             $this->Lab->L + ($percentage * ($color->Lab->L - $this->Lab->L)),
             $this->Lab->a + ($percentage * ($color->Lab->a - $this->Lab->a)),
             $this->Lab->b + ($percentage * ($color->Lab->b - $this->Lab->b))
@@ -118,7 +118,7 @@ trait Lab {
     // Mix with L*a*b* by default. Colors in this color space are perceptively
     // uniform and are perfect for mixing.
     public function mix(Color $color, float $percentage = 0.5): Color {
-        return Color::mixWithLab($color, $percentage);
+        return self::mixWithLab($color, $percentage);
     }
 
     public static function averageWithLCHab(Color ...$colors): Color {
@@ -133,7 +133,7 @@ trait Lab {
             $cSum += $c->LCHab->H;
         }
 
-        return Color::withLCHab($aSum / $length, $bSum / $length, $cSum / $length);
+        return self::withLCHab($aSum / $length, $bSum / $length, $cSum / $length);
     }
 
     public function mixWithLCHab(Color $color, float $percentage = 0.5): Color {
@@ -172,7 +172,7 @@ trait Lab {
         $H = $aH + ($percentage * ($bH - $aH));
         $H = ($H > 359) ? $H - 360 : $H;
 
-        return Color::withLCHab(
+        return self::withLCHab(
             $aL + ($percentage * ($bL - $aL)),
             $aC + ($percentage * ($bC - $aC)),
             $H

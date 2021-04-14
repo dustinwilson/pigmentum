@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace dW\Pigmentum\ColorSpace;
 
-class Lab extends AbstractSpace {
+class Lab extends ColorSpace {
     protected $_L;
     protected $_a;
     protected $_b;

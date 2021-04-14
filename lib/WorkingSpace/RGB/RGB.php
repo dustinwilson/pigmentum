@@ -4,7 +4,7 @@ namespace dW\Pigmentum\WorkingSpace\RGB;
 use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
-abstract class AbstractRGB {
+abstract class RGB extends \dW\Pigmentum\WorkingSpace {
     const illuminant = \dW\Pigmentum\Color::ILLUMINANT_D65;
     const chromaticity = [];
     const gamma = 2.2;

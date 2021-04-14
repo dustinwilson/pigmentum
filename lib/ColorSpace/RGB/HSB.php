@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace dW\Pigmentum\ColorSpace\RGB;
 
-class HSB extends \dW\Pigmentum\ColorSpace\AbstractSpace {
+class HSB extends \dW\Pigmentum\ColorSpace\ColorSpace {
     protected $_H;
     protected $_S;
     protected $_B;

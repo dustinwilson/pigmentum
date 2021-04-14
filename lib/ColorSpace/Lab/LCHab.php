@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace dW\Pigmentum\ColorSpace\Lab;
 use \dW\Pigmentum\Color as Color;
 
-class LCHab extends \dW\Pigmentum\ColorSpace\AbstractSpace {
+class LCHab extends \dW\Pigmentum\ColorSpace\ColorSpace {
     protected $_L;
     protected $_C;
     protected $_H;
