@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": ">=7.0.0",
+        "php": ">=7.4.0",
         "ext-dom": "*",
         "ext-zip": "*",
         "markrogoyski/math-php": ">=0.49.0"
