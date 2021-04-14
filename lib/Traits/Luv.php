@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace dW\Pigmentum\Traits;
+namespace dW\Pigmentum;
 use dW\Pigmentum\Color as Color;
 use dW\Pigmentum\ColorSpace\Luv as ColorSpaceLuv;
 use dW\Pigmentum\ColorSpace\Luv\LCHuv as ColorSpaceLCHuv;

@@ -5,7 +5,7 @@ use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
 class Color {
-    use Traits\RGB, Traits\Lab, Traits\Luv;
+    use RGB, Lab, Luv;
 
     const ILLUMINANT_D65 = [ 0.95047, 1, 1.08883 ];
     const ILLUMINANT_D50 = [ 0.96422, 1, 0.82521 ];

@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace dW\Pigmentum\Traits;
+namespace dW\Pigmentum;
 use dW\Pigmentum\Color as Color;
 use dW\Pigmentum\ColorSpace\RGB\HSB as ColorSpaceHSB;
 use dW\Pigmentum\ColorSpace\RGB as ColorSpaceRGB;
