@@ -60,10 +60,6 @@ class XYZ extends ColorSpace {
         $m2 = $m1->multiply($bradford);
         $xyz = $m2->multiply(new Matrix([ [$this->_X], [$this->_Y], [$this->_Z] ]));
 
-        $this->_X = $xyz[0][0];
-        $this->_Y = $xyz[1][0];
-        $this->_Z = $xyz[2][0];
-
-        return $this;
+        return new XYZ($xyz[0][0], $xyz[1][0], $xyz[2][0]);
     }
 }

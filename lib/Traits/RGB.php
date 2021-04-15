@@ -109,13 +109,15 @@ trait RGB {
         ]);
 
         $xyz = ($profileClass::getXYZMatrix())->vectorMultiply($vector);
-        $color = new self($xyz[0], $xyz[1], $xyz[2], $name, [
+        $xyz = new ColorSpaceXYZ($xyz[0], $xyz[1], $xyz[2]);
+        
+        if ($profileClass::illuminant !== self::REFERENCE_WHITE) {
+            $xyz = $xyz->chromaticAdaptation(self::REFERENCE_WHITE, $profileClass::illuminant);
+        }
+
+        $color = new self($xyz->X, $xyz->Y, $xyz->Z, $name, [
             'RGB' => new ColorSpaceRGB($r, $g, $b, $profile, $this->_XYZ, $hex, $HSB)
         ]);
-
-        if ($profileClass::illuminant !== self::REFERENCE_WHITE) {
-            $color->XYZ->chromaticAdaptation(self::REFERENCE_WHITE, $profileClass::illuminant);
-        }
 
         return $color;
     }
@@ -148,7 +150,7 @@ trait RGB {
             );
         } else {
             if ($profileClass::illuminant !== self::REFERENCE_WHITE) {
-                $xyz = (new ColorSpaceXYZ($this->_XYZ->X, $this->_XYZ->Y, $this->_XYZ->Z))->chromaticAdaptation(self::ILLUMINANT_D65, self::REFERENCE_WHITE);
+                $xyz = $this->_XYZ->chromaticAdaptation($profileClass::illuminant, self::REFERENCE_WHITE);
             } else {
                 $xyz = $this->_XYZ;
             }
