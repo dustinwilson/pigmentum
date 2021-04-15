@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace dW\Pigmentum\ColorSpace;
+use dW\Pigmentum\ColorSpace\XYZ\LMS as LMS;
 use MathPHP\LinearAlgebra\Matrix as Matrix;
 
 class XYZ extends ColorSpace {
@@ -22,8 +23,8 @@ class XYZ extends ColorSpace {
         $this->_Z = $Z;
     }
 
-    protected function toLMS(): XYZ\LMS {
-        if (!is_null($this->_lms)) {
+    protected function toLMS(): LMS {
+        if ($this->_lms !== null) {
             return $this->_lms;
         }
 
@@ -38,7 +39,7 @@ class XYZ extends ColorSpace {
             return $out;
         }, self::BRADFORD);
 
-        $this->_lms = new XYZ\LMS($result[0], $result[1], $result[2]);
+        $this->_lms = new LMS($result[0], $result[1], $result[2]);
         return $this->_lms;
     }
 

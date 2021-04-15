@@ -9,12 +9,10 @@ use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
 trait RGB {
-    protected $_Hex;
-    protected $_HSB;
     protected $_RGB;
 
 
-    static function withHex(string $hex, ?string $name = null, int $profile = -1): Color {
+    static function withRGBHex(string $hex, ?string $name = null, int $profile = -1): Color {
         if ($profile === -1) {
             $profile = self::$workingSpaceRGB;
         }
@@ -94,11 +92,11 @@ trait RGB {
         return self::_withRGB($r, $g, $b, $name, $profile, null, new ColorSpaceHSB($h, $s, $v));
     }
 
-    private static function _withRGB(float $r, float $g, float $b, ?string $name = null, int $profile = -1, ?string $hex = null, ?ColorSpaceHSB $hsb = null): Color {
+    private static function _withRGB(float $r, float $g, float $b, ?string $name = null, int $profile = -1, ?string $hex = null, ?ColorSpaceHSB $HSB = null): Color {
         if ($profile === -1) {
             $profile = self::$workingSpaceRGB;
         }
-        $profileClass = self::getProfileClassString($profile);
+        $profileClass = self::getProfileClassName($profile);
 
         $r = min(max($r, 0), 255);
         $g = min(max($g, 0), 255);
@@ -112,9 +110,7 @@ trait RGB {
 
         $xyz = ($profileClass::getXYZMatrix())->vectorMultiply($vector);
         $color = new self($xyz[0], $xyz[1], $xyz[2], $name, [
-            'RGB' => new ColorSpaceRGB($r, $g, $b, $profile),
-            'Hex' => $hex,
-            'HSB' => $hsb
+            'RGB' => new ColorSpaceRGB($r, $g, $b, $profile, $this->_XYZ, $hex, $HSB)
         ]);
 
         if ($profileClass::illuminant !== self::REFERENCE_WHITE) {
@@ -131,74 +127,11 @@ trait RGB {
         return self::_withRGB($r, $g, $b, $name, $profile);
     }
 
-
-    public function toHex(): string {
-        if (is_null($this->_RGB)) {
-            $this->toRGB();
-        }
-
-        if (!is_null($this->_hex)) {
-            return $this->_hex;
-        }
-
-        $this->_hex = sprintf("#%02x%02x%02x", (int)round($this->_RGB->R), (int)round($this->_RGB->G), (int)round($this->_RGB->B));
-        return $this->_hex;
-    }
-
-    public function toHSB(): ColorSpaceHSB {
-        if (is_null($this->_RGB)) {
-            $this->toRGB();
-        }
-
-        if (!is_null($this->_hsb)) {
-            return $this->_hsb;
-        }
-
-        $r = $this->RGB->R / 255;
-        $g = $this->_RGB->G / 255;
-        $b = $this->_RGB->B / 255;
-
-        $max = max($r, $g, $b);
-        $min = min($r, $g, $b);
-        $d = $max - $min;
-        $v = $max;
-
-        if ($d == 0) {
-            $h = 0;
-            $s = 0;
-        } else {
-            $s = $d / $max;
-
-            $R = ((($max - $r) / 6) + ($d / 2)) / $d;
-            $G = ((($max - $g) / 6) + ($d / 2)) / $d;
-            $B = ((($max - $b) / 6) + ($d / 2)) / $d;
-
-            if ($r == $max) {
-                $h = $B - $G;
-            } elseif ($g == $max) {
-                $h = (1 / 3) + $R - $B;
-            } elseif ($b == $max) {
-                $h = (2 / 3) + $G - $R;
-            }
-
-            if ($h < 0) {
-                $h += 1;
-            }
-            if ($h > 1) {
-                $h -= 1;
-            }
-        }
-
-        $this->_hsb = new ColorSpaceHSB($h * 360, $s * 100, $v * 100);
-        return $this->_hsb;
-    }
-
-
     public function toRGB(int $profile = -1): ColorSpaceRGB {
         if ($profile === -1) {
             $profile = self::$workingSpaceRGB;
         }
-        $profileClass = self::getProfileClassString($profile);
+        $profileClass = self::getProfileClassName($profile);
         $xyz = $this->_XYZ;
 
         // If the XYZ value is within 5 decimal points of D50 (illuminant used by this
@@ -210,7 +143,8 @@ trait RGB {
                 255,
                 255,
                 255,
-                $profile
+                $profile,
+                $this->_XYZ
             );
         } else {
             if ($profileClass::illuminant !== self::REFERENCE_WHITE) {
@@ -226,11 +160,10 @@ trait RGB {
                 min(max($profileClass::companding($uncompandedVector[0]) * 255, 0), 255),
                 min(max($profileClass::companding($uncompandedVector[1]) * 255, 0), 255),
                 min(max($profileClass::companding($uncompandedVector[2]) * 255, 0), 255),
-                $profile
+                $profile,
+                $this->_XYZ
             );
         }
-
-        $this->_Hex = null;
 
         return $this->_RGB;
     }
@@ -276,9 +209,9 @@ trait RGB {
         $length = sizeof($colors);
 
         foreach ($colors as $c) {
-            $aSum += $c->HSB->H;
-            $bSum += $c->HSB->S;
-            $cSum += $c->HSB->B;
+            $aSum += $c->RGB->HSB->H;
+            $bSum += $c->RGB->HSB->S;
+            $cSum += $c->RGB->HSB->B;
         }
 
         return self::withHSB($aSum / $length, $bSum / $length, $cSum / $length);
@@ -291,12 +224,12 @@ trait RGB {
             return $color;
         }
 
-        $aH = $this->HSB->H;
-        $aS = $this->HSB->S;
-        $aB = $this->HSB->B;
-        $bH = $color->HSB->H;
-        $bS = $color->HSB->S;
-        $bB = $color->HSB->B;
+        $aH = $this->RGB->HSB->H;
+        $aS = $this->RGB->HSB->S;
+        $aB = $this->RGB->HSB->B;
+        $bH = $color->RGB->HSB->H;
+        $bS = $color->RGB->HSB->S;
+        $bB = $color->RGB->HSB->B;
 
         // If the saturation is 0 then the hue doesn't matter. The color is
         // grey, so to keep mixing from going across the entire hue range in
@@ -325,16 +258,5 @@ trait RGB {
             $aS + ($percentage * ($bS - $aS)),
             $aB + ($percentage * ($bB - $aB))
         );
-    }
-
-    protected function changeProfileRGB(int $profile = -1): bool {
-        self::getProfileClassString($profile);
-
-        self::toRGB($profile);
-        if ($this->_HSB !== null) {
-            self::toHSB();
-        }
-
-        return true;
     }
 }

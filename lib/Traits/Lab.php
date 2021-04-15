@@ -9,7 +9,6 @@ use MathPHP\LinearAlgebra\Vector as Vector;
 
 trait Lab {
     protected $_Lab;
-    protected $_LCHab;
 
     private static function _withLab(float $L, float $a, float $b, ?string $name = null, ?ColorSpaceLCHab $LCHab = null): Color {
         $L = min(max($L, 0), 100);
@@ -27,10 +26,7 @@ trait Lab {
         $yr = ($L > self::KAPPA * self::EPSILON) ? (($L + 16.0) / 116.0) ** 3 : $L / self::KAPPA;
         $zr = ($fz3 > self::EPSILON) ? $fz3 : (116.0 * $fz - 16.0) / self::KAPPA;
 
-        return new self($xr * self::REFERENCE_WHITE[0], $yr * self::REFERENCE_WHITE[1], $zr * self::REFERENCE_WHITE[2], $name, [
-            'Lab' => new ColorSpaceLab($L, $a, $b),
-            'LCHab' => $LCHab
-        ]);
+        return new self($xr * self::REFERENCE_WHITE[0], $yr * self::REFERENCE_WHITE[1], $zr * self::REFERENCE_WHITE[2], $name, [ 'Lab' => new ColorSpaceLab($L, $a, $b, $LCHab) ]);
     }
 
     public static function withLab(float $L, float $a, float $b, ?string $name = null): Color {
@@ -43,7 +39,7 @@ trait Lab {
     }
 
     public function toLab(): ColorSpaceLab {
-        if (!is_null($this->_Lab)) {
+        if ($this->_Lab !== null) {
             return $this->_Lab;
         }
 
@@ -68,22 +64,6 @@ trait Lab {
         // Combat issues where -0 would interfere in math down the road.
         $this->_Lab = new ColorSpaceLab(($L == -0) ? 0 : $L, ($a == -0) ? 0 : $a, ($b == -0) ? 0 : $b);
         return $this->_Lab;
-    }
-
-    public function toLCHab(): ColorSpaceLCHab {
-        if (is_null($this->_Lab)) {
-            $this->toLab();
-        }
-
-        $c = sqrt($this->_Lab->a**2 + $this->_Lab->b**2);
-
-        $h = rad2deg(atan2($this->_Lab->b, $this->_Lab->a));
-        if ($h < 0) {
-            $h += 360;
-        }
-
-        $this->_LCHab = new ColorSpaceLCHab($this->_Lab->L, $c, $h);
-        return $this->_LCHab;
     }
 
     public static function averageWithLab(Color ...$colors): Color {
@@ -128,9 +108,9 @@ trait Lab {
         $length = sizeof($colors);
 
         foreach ($colors as $c) {
-            $aSum += $c->LCHab->L;
-            $bSum += $c->LCHab->C;
-            $cSum += $c->LCHab->H;
+            $aSum += $c->Lab->LCHab->L;
+            $bSum += $c->Lab->LCHab->C;
+            $cSum += $c->Lab->LCHab->H;
         }
 
         return self::withLCHab($aSum / $length, $bSum / $length, $cSum / $length);
@@ -143,12 +123,12 @@ trait Lab {
             return $color;
         }
 
-        $aL = $this->LCHab->L;
-        $aC = $this->LCHab->C;
-        $aH = $this->LCHab->H;
-        $bL = $color->LCHab->L;
-        $bC = $color->LCHab->C;
-        $bH = $color->LCHab->H;
+        $aL = $this->Lab->LCHab->L;
+        $aC = $this->Lab->LCHab->C;
+        $aH = $this->Lab->LCHab->H;
+        $bL = $color->Lab->LCHab->L;
+        $bC = $color->Lab->LCHab->C;
+        $bH = $color->Lab->LCHab->H;
 
         // If the chroma is 0 then the hue doesn't matter. The color is grey,
         // so to keep mixing from going across the entire hue range in some

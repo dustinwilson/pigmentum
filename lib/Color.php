@@ -43,7 +43,7 @@ class Color {
 
 
     static function withXYZ(float $X, float $Y, float $Z, string $name = null): Color {
-        return new self(min(0, $X), min(0, $Y), min(0, $Z), $name);
+        return new self(max(0, $X), max(0, $Y), max(0, $Z), $name);
     }
 
 
@@ -134,7 +134,7 @@ class Color {
     public function __get($property) {
         $prop = "_$property";
         if (property_exists($this, $prop)) {
-            if (is_null($this->$prop)) {
+            if ($this->$prop === null) {
                 $method = "to$property";
                 $this->$prop = $this->$method();
             }
@@ -143,11 +143,7 @@ class Color {
         }
     }
 
-    public function __toString(): string {
-        return $this->Hex;
-    }
-
-    protected function getProfileClassString(int $profile = -1, ?string $mode = 'RGB'): string {
+    protected function getProfileClassName(int $profile = -1, ?string $mode = 'RGB'): string {
         switch ($mode) {
             case 'RGB':
                 switch ($profile) {

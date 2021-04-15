@@ -9,7 +9,6 @@ use MathPHP\LinearAlgebra\Vector as Vector;
 
 trait Luv {
     protected $_Luv;
-    protected $_LCHuv;
 
     private static function _withLuv(float $L, float $u, float $v, ?string $name = null, ?ColorSpaceLCHuv $LCHuv = null): Color {
         $u0 = (4 * self::REFERENCE_WHITE[0]) / (self::REFERENCE_WHITE[0] + 15 * self::REFERENCE_WHITE[1] + 3 * self::REFERENCE_WHITE[2]);
@@ -25,10 +24,7 @@ trait Luv {
         $X = ($d - $b) / ($a - $c);
         $Z = $X * ($a + $b);
 
-        return new self($X, $Y, $Z, $name, [
-            'Luv' => new ColorSpaceLuv($L, $u, $v),
-            'LCHuv' => $LCHuv
-        ]);
+        return new self($X, $Y, $Z, $name, [ 'Luv' => new ColorSpaceLuv($L, $u, $v, $LCHuv) ]);
     }
 
     public static function withLuv(float $L, float $u, float $v, ?string $name = null): Color {
@@ -41,7 +37,7 @@ trait Luv {
     }
 
     public function toLuv(): ColorSpaceLuv {
-        if (!is_null($this->_Luv)) {
+        if ($this->_Luv !== null) {
             return $this->_Luv;
         }
 
@@ -62,23 +58,6 @@ trait Luv {
         $this->_Luv = new ColorSpaceLuv(($L == -0) ? 0 : $L, ($u == -0) ? 0 : $u, ($v == -0) ? 0 : $v);
         return $this->_Luv;
     }
-
-    public function toLCHuv(): ColorSpaceLCHuv {
-        if (is_null($this->_Luv)) {
-            $this->toLuv();
-        }
-
-        $c = sqrt($this->_Luv->u ** 2 + $this->_Luv->v ** 2);
-
-        $h = rad2deg(atan2($this->_Luv->v, $this->_Luv->u));
-        if ($h < 0) {
-            $h += 360;
-        }
-
-        $this->_LCHuv = new ColorSpaceLCHuv($this->_Luv->L, $c, $h);
-        return $this->_LCHuv;
-    }
-
 
     public static function averageWithLuv(Color ...$colors): Color {
         $aSum = 0;
@@ -116,9 +95,9 @@ trait Luv {
         $length = sizeof($colors);
 
         foreach ($colors as $c) {
-            $aSum += $c->LCHuv->L;
-            $bSum += $c->LCHuv->C;
-            $cSum += $c->LCHuv->H;
+            $aSum += $c->Luv->LCHuv->L;
+            $bSum += $c->Luv->LCHuv->C;
+            $cSum += $c->Luv->LCHuv->H;
         }
 
         return self::withLCHuv($aSum / $length, $bSum / $length, $cSum / $length);
@@ -131,12 +110,12 @@ trait Luv {
             return $color;
         }
 
-        $aL = $this->LCHuv->L;
-        $aC = $this->LCHuv->C;
-        $aH = $this->LCHuv->H;
-        $bL = $color->LCHuv->L;
-        $bC = $color->LCHuv->C;
-        $bH = $color->LCHuv->H;
+        $aL = $this->Luv->LCHuv->L;
+        $aC = $this->Luv->LCHuv->C;
+        $aH = $this->Luv->LCHuv->H;
+        $bL = $color->Luv->LCHuv->L;
+        $bC = $color->Luv->LCHuv->C;
+        $bH = $color->Luv->LCHuv->H;
 
         // If the chroma is 0 then the hue doesn't matter. The color is grey,
         // so to keep mixing from going across the entire hue range in some
