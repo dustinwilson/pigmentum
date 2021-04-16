@@ -9,7 +9,7 @@ class XYZ extends ColorSpace {
     protected $_Y;
     protected $_Z;
 
-    protected $_lms;
+    protected $_LMS;
 
     const BRADFORD = [
         [ 0.8951000, 0.2664000, -0.1614000 ],
@@ -45,8 +45,8 @@ class XYZ extends ColorSpace {
 
     // Bradford method of adaptation, seen as the most accurate to date.
     public function chromaticAdaptation(array $new, array $old): XYZ {
-        $new = (new XYZ($new[0], $new[1], $new[2]))->toLMS();
-        $old = (new XYZ($old[0], $old[1], $old[2]))->toLMS();
+        $new = (new XYZ($new[0], $new[1], $new[2]))->LMS;
+        $old = (new XYZ($old[0], $old[1], $old[2]))->LMS;
 
         $mir = new Matrix([
             [ $new->rho / $old->rho, 0, 0 ],

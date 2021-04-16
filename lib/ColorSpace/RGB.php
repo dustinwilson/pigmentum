@@ -23,12 +23,7 @@ class RGB extends ColorSpace {
         if ($profile === null) {
             $profile = Color::$workingSpaceRGB;
         }
-        // This whole process of passing around profiles as strings is stupid as
-        // evidenced by the line below, but PHP has no way of handling passing around
-        // static classes yet.
-        elseif (!in_array(RGBProfile::class, class_parents($profile))) {
-            throw new \Exception("$profile is not an instance of " . RGBProfile::class . ".\n");
-        }
+        // Assume the color profile has already been checked.
 
         $this->_R = $R;
         $this->_G = $G;

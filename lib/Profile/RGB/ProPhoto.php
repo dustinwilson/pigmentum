@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace dW\Pigmentum\Profile\RGB;
+use dW\Pigmentum\Color as Color;
 
 class ProPhoto extends \dW\Pigmentum\Profile\RGB {
     const name = 'ProPhoto RGB';

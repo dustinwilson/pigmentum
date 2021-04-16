@@ -10,11 +10,11 @@ abstract class RGB extends \dW\Pigmentum\Profile\Profile {
 
     // Gamma companding
     public static function companding(float $channel): float {
-        return min(max($channel ** (1 / self::gamma), 0), 1);
+        return min(max($channel ** (1 / static::gamma), 0), 1);
     }
 
     public static function inverseCompanding(float $channel): float {
-        return min(max($channel ** self::gamma, 0), 1);
+        return min(max($channel ** static::gamma, 0), 1);
     }
 
     public static function getXYZMatrix(): Matrix {
@@ -43,7 +43,7 @@ abstract class RGB extends \dW\Pigmentum\Profile\Profile {
             [ $Zr, $Zg, $Zb ]
         ]))->inverse();
 
-        $W = new Vector(self::illuminant);
+        $W = new Vector(static::illuminant);
         $SW = $S->multiply($W);
 
         $Sr = $SW->getRow(0)[0];

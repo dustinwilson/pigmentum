@@ -30,7 +30,7 @@ trait RGB {
 
     static function withHSB(float $h, float $s, float $v, ?string $name = null, ?string $profile = null): Color {
         $profile = self::validateRGBProfile($profile);
-        
+
         $ss = $s / 100;
         $vv = $v / 100 * 255;
 
@@ -114,7 +114,7 @@ trait RGB {
         }
 
         $color = new self($xyz->X, $xyz->Y, $xyz->Z, $name, [
-            'RGB' => new ColorSpaceRGB($r, $g, $b, $profile, $this->_XYZ, $hex, $HSB)
+            'RGB' => new ColorSpaceRGB($r, $g, $b, $profile, $xyz, $hex, $HSB)
         ]);
 
         return $color;
@@ -142,7 +142,7 @@ trait RGB {
                 $this->_XYZ
             );
         } else {
-            if ($profile::illuminant !== self::REFERENCE_WHITE) {
+            if ($profile::illuminant != self::REFERENCE_WHITE) {
                 $xyz = $this->_XYZ->chromaticAdaptation($profile::illuminant, self::REFERENCE_WHITE);
             } else {
                 $xyz = $this->_XYZ;
