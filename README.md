@@ -14,7 +14,7 @@ Library for manipulating color in PHP. Class exists to scratch my own itch, but 
 
 Colors in Pigmentum is represented as a single color object. All color spaces in any application are converted to [XYZ][a] before converting back to another color. That's how it is handled here. At present Pigmentum handles [CIELAB][b], [CIELUV][c], [HSB/V][d], [LMS][e], [RGB][f], and [XYZ][a].
 
-**This is a stub. The examples below only show a few things the library can do. In the future the class will be documented. **
+**This is a stub. The examples below only show a few things the library can do. In the future the class will be documented.**
 
 ### Convert from RGB Hex string to Lab ###
 
@@ -33,4 +33,22 @@ namespace dW\Pigmentum;
 $green = Color::withRGBHex('#33903c', null, Color::PROFILE_ADOBERGB1998);
 $green->RGB->convertToProfile(Color::PROFILE_SRGB);
 echo $green->RGB; // rgb(0, 145.30458529644, 49.259546335093)
+```
+
+### Set the RGB working space ###
+
+```php
+namespace dW\Pigmentum;
+
+Color::$workingSpaceRGB = Color::PROFILE_ADOBERGB1998;
+$green = Color::withRGBHex('#33903c');
+echo $green->XYZ; // xyz(0.082244125828696, 0.18960958483966, 0.048760095036819)
+
+Color::$workingSpaceRGB = Color::PROFILE_PROPHOTORGB;
+$green = Color::withRGBHex('#33903c');
+echo $green->XYZ; // xyz(0.094672898772452, 0.27040044181874, 0.061018904751117)
+
+Color::$workingSpaceRGB = Color::PROFILE_SRGB;
+$green = Color::withRGBHex('#33903c');
+echo $green->XYZ; // xyz(0.1282938034234, 0.21003833542218, 0.059813899543487)
 ```
