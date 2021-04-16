@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace dW\Pigmentum\Profile\RGB;
 
-abstract class ProPhoto extends \dW\Pigmentum\Profile\RGB {
+class ProPhoto extends \dW\Pigmentum\Profile\RGB {
+    const name = 'ProPhoto RGB';
+
     const illuminant = Color::ILLUMINANT_D50;
 
     const chromaticity = [

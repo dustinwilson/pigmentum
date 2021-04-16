@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace dW\Pigmentum\Profile\RGB;
 
-abstract class sRGB extends \dW\Pigmentum\Profile\RGB {
+class sRGB extends \dW\Pigmentum\Profile\RGB {
+    const name = 'sRGB IEC61966-2.1';
+
     const chromaticity = [
         [ 0.6400, 0.3300 ],
         [ 0.3000, 0.6000 ],

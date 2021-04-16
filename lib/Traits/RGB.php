@@ -5,6 +5,7 @@ use dW\Pigmentum\Color as Color;
 use dW\Pigmentum\ColorSpace\RGB\HSB as ColorSpaceHSB;
 use dW\Pigmentum\ColorSpace\RGB as ColorSpaceRGB;
 use dW\Pigmentum\ColorSpace\XYZ as ColorSpaceXYZ;
+use dW\Pigmentum\Profile\RGB as RGBProfile;
 use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
@@ -12,10 +13,8 @@ trait RGB {
     protected $_RGB;
 
 
-    static function withRGBHex(string $hex, ?string $name = null, int $profile = -1): Color {
-        if ($profile === -1) {
-            $profile = self::$workingSpaceRGB;
-        }
+    static function withRGBHex(string $hex, ?string $name = null, ?string $profile = null): Color {
+        $profile = self::validateRGBProfile($profile);
 
         if (strpos($hex, '#') !== 0) {
             $hex = "#$hex";
@@ -29,7 +28,9 @@ trait RGB {
         return self::_withRGB($r, $g, $b, $name, $profile, $hex);
     }
 
-    static function withHSB(float $h, float $s, float $v, ?string $name = null, int $profile = -1): Color {
+    static function withHSB(float $h, float $s, float $v, ?string $name = null, ?string $profile = null): Color {
+        $profile = self::validateRGBProfile($profile);
+        
         $ss = $s / 100;
         $vv = $v / 100 * 255;
 
@@ -92,27 +93,24 @@ trait RGB {
         return self::_withRGB($r, $g, $b, $name, $profile, null, new ColorSpaceHSB($h, $s, $v));
     }
 
-    private static function _withRGB(float $r, float $g, float $b, ?string $name = null, int $profile = -1, ?string $hex = null, ?ColorSpaceHSB $HSB = null): Color {
-        if ($profile === -1) {
-            $profile = self::$workingSpaceRGB;
-        }
-        $profileClass = self::getProfileClassName($profile);
+    private static function _withRGB(float $r, float $g, float $b, ?string $name = null, ?string $profile = null, ?string $hex = null, ?ColorSpaceHSB $HSB = null): Color {
+        $profile = self::validateRGBProfile($profile);
 
         $r = min(max($r, 0), 255);
         $g = min(max($g, 0), 255);
         $b = min(max($b, 0), 255);
 
         $vector = new Vector([
-            $profileClass::inverseCompanding($r / 255),
-            $profileClass::inverseCompanding($g / 255),
-            $profileClass::inverseCompanding($b / 255)
+            $profile::inverseCompanding($r / 255),
+            $profile::inverseCompanding($g / 255),
+            $profile::inverseCompanding($b / 255)
         ]);
 
-        $xyz = ($profileClass::getXYZMatrix())->vectorMultiply($vector);
+        $xyz = ($profile::getXYZMatrix())->vectorMultiply($vector);
         $xyz = new ColorSpaceXYZ($xyz[0], $xyz[1], $xyz[2]);
-        
-        if ($profileClass::illuminant !== self::REFERENCE_WHITE) {
-            $xyz = $xyz->chromaticAdaptation(self::REFERENCE_WHITE, $profileClass::illuminant);
+
+        if ($profile::illuminant !== self::REFERENCE_WHITE) {
+            $xyz = $xyz->chromaticAdaptation(self::REFERENCE_WHITE, $profile::illuminant);
         }
 
         $color = new self($xyz->X, $xyz->Y, $xyz->Z, $name, [
@@ -122,18 +120,13 @@ trait RGB {
         return $color;
     }
 
-    public static function withRGB(float $r, float $g, float $b, ?string $name = null, int $profile = -1): Color {
-        if ($profile === -1) {
-            $profile = self::$workingSpaceRGB;
-        }
+    public static function withRGB(float $r, float $g, float $b, ?string $name = null, ?string $profile = null): Color {
         return self::_withRGB($r, $g, $b, $name, $profile);
     }
 
-    public function toRGB(int $profile = -1): ColorSpaceRGB {
-        if ($profile === -1) {
-            $profile = self::$workingSpaceRGB;
-        }
-        $profileClass = self::getProfileClassName($profile);
+    public function toRGB(?string $profile = null): ColorSpaceRGB {
+        $profile = self::validateRGBProfile($profile);
+
         $xyz = $this->_XYZ;
 
         // If the XYZ value is within 5 decimal points of D50 (illuminant used by this
@@ -149,19 +142,19 @@ trait RGB {
                 $this->_XYZ
             );
         } else {
-            if ($profileClass::illuminant !== self::REFERENCE_WHITE) {
-                $xyz = $this->_XYZ->chromaticAdaptation($profileClass::illuminant, self::REFERENCE_WHITE);
+            if ($profile::illuminant !== self::REFERENCE_WHITE) {
+                $xyz = $this->_XYZ->chromaticAdaptation($profile::illuminant, self::REFERENCE_WHITE);
             } else {
                 $xyz = $this->_XYZ;
             }
 
-            $matrix = $profileClass::getXYZMatrix()->inverse();
+            $matrix = $profile::getXYZMatrix()->inverse();
             $uncompandedVector = $matrix->vectorMultiply(new Vector([ $xyz->X, $xyz->Y, $xyz->Z ]));
 
             $this->_RGB = new ColorSpaceRGB(
-                min(max($profileClass::companding($uncompandedVector[0]) * 255, 0), 255),
-                min(max($profileClass::companding($uncompandedVector[1]) * 255, 0), 255),
-                min(max($profileClass::companding($uncompandedVector[2]) * 255, 0), 255),
+                min(max($profile::companding($uncompandedVector[0]) * 255, 0), 255),
+                min(max($profile::companding($uncompandedVector[1]) * 255, 0), 255),
+                min(max($profile::companding($uncompandedVector[2]) * 255, 0), 255),
                 $profile,
                 $this->_XYZ
             );
@@ -260,5 +253,20 @@ trait RGB {
             $aS + ($percentage * ($bS - $aS)),
             $aB + ($percentage * ($bB - $aB))
         );
+    }
+
+    protected static function validateRGBProfile(?string $profile = null): string {
+        if ($profile !== null) {
+            // This whole process of passing around profiles as strings is stupid as
+            // evidenced by the line below, but PHP has no way of handling passing around
+            // static classes yet.
+            if (!in_array(RGBProfile::class, class_parents($profile))) {
+                throw new \Exception("$profile is not an instance of " . RGBProfile::class . ".\n");
+            }
+
+            return $profile;
+        }
+
+        return self::$workingSpaceRGB;
     }
 }

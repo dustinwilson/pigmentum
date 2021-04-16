@@ -6,10 +6,7 @@ use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
 abstract class RGB extends \dW\Pigmentum\Profile\Profile {
-    const illuminant = Color::ILLUMINANT_D65;
-    const chromaticity = [];
     const gamma = 2.2;
-    const mode = 'RGB';
 
     // Gamma companding
     public static function companding(float $channel): float {

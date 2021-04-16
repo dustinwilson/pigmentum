@@ -19,9 +19,9 @@ class Color {
     const EPSILON = 0.008856451679036;
 
     // RGB color profiles
-    const PROFILE_SRGB = 0;
-    const PROFILE_ADOBERGB1998 = 1;
-    const PROFILE_PROPHOTORGB = 2;
+    const PROFILE_SRGB = '\dW\Pigmentum\Profile\RGB\sRGB';
+    const PROFILE_ADOBERGB1998 = '\dW\Pigmentum\Profile\RGB\AdobeRGB1998';
+    const PROFILE_PROPHOTORGB = '\dW\Pigmentum\Profile\RGB\ProPhoto';
 
     public $name;
 
@@ -140,23 +140,6 @@ class Color {
             }
 
             return $this->$prop;
-        }
-    }
-
-    protected function getProfileClassName(int $profile = -1, ?string $mode = 'RGB'): string {
-        switch ($mode) {
-            case 'RGB':
-                switch ($profile) {
-                    case self::PROFILE_SRGB: return Profile\RGB\sRGB::class;
-                    break;
-                    case self::PROFILE_ADOBERGB1998: return Profile\RGB\AdobeRGB1998::class;
-                    break;
-                    case self::PROFILE_PROPHOTORGB: return Profile\RGB\ProPhoto::class;
-                    break;
-                    default: throw new \Exception("Profile does not exist or is not supported by Pigmentum.\n");
-                }
-            break;
-            default: throw new \Exception("Invalid color mode.\n");
         }
     }
 }

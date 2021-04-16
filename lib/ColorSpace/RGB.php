@@ -19,11 +19,21 @@ class RGB extends ColorSpace {
     protected $xyz;
 
 
-    public function __construct(float $R, float $G, float $B, int $profile = -1, XYZ $xyz, ?string $hex = null, ?HSB $HSB = null) {
+    public function __construct(float $R, float $G, float $B, ?string $profile = null, XYZ $xyz, ?string $hex = null, ?HSB $HSB = null) {
+        if ($profile === null) {
+            $profile = Color::$workingSpaceRGB;
+        }
+        // This whole process of passing around profiles as strings is stupid as
+        // evidenced by the line below, but PHP has no way of handling passing around
+        // static classes yet.
+        elseif (!in_array(RGBProfile::class, class_parents($profile))) {
+            throw new \Exception("$profile is not an instance of " . RGBProfile::class . ".\n");
+        }
+
         $this->_R = $R;
         $this->_G = $G;
         $this->_B = $B;
-        $this->_profile = $profile;
+        $this->_profile = ($profile !== null) ? $profile : Color::$workingSpaceRGB;
         $this->xyz = \WeakReference::create($xyz);
 
         if ($hex !== null) {
@@ -35,7 +45,7 @@ class RGB extends ColorSpace {
         }
     }
 
-    public function convertToProfile(int $profile = -1): RGB {
+    public function convertToProfile(?string $profile = null): RGB {
         $xyz = $this->xyz->get();
         $color = Color::withXYZ($xyz->X, $xyz->Y, $xyz->Z);
         $rgb = $color->toRGB($profile);
