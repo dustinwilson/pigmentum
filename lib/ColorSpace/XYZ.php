@@ -62,4 +62,8 @@ class XYZ extends ColorSpace {
 
         return new XYZ($xyz[0][0], $xyz[1][0], $xyz[2][0]);
     }
+
+    public function __toString() {
+        return "xyz({$this->_X}, {$this->_Y}, {$this->_Z})";
+    }
 }

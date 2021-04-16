@@ -12,4 +12,8 @@ class LMS extends \dW\Pigmentum\ColorSpace\ColorSpace {
         $this->_gamma = $gamma;
         $this->_beta = $beta;
     }
+
+    public function __toString() {
+        return "lms({$this->_L}, {$this->_M}, {$this->_S})";
+    }
 }

@@ -14,7 +14,7 @@ trait RGB {
 
 
     static function withRGBHex(string $hex, ?string $name = null, ?string $profile = null): Color {
-        $profile = self::validateRGBProfile($profile);
+        $profile = ColorSpaceRGB::validateProfile($profile);
 
         if (strpos($hex, '#') !== 0) {
             $hex = "#$hex";
@@ -29,7 +29,7 @@ trait RGB {
     }
 
     static function withHSB(float $h, float $s, float $v, ?string $name = null, ?string $profile = null): Color {
-        $profile = self::validateRGBProfile($profile);
+        $profile = ColorSpaceRGB::validateProfile($profile);
 
         $ss = $s / 100;
         $vv = $v / 100 * 255;
@@ -94,7 +94,7 @@ trait RGB {
     }
 
     private static function _withRGB(float $r, float $g, float $b, ?string $name = null, ?string $profile = null, ?string $hex = null, ?ColorSpaceHSB $HSB = null): Color {
-        $profile = self::validateRGBProfile($profile);
+        $profile = ColorSpaceRGB::validateProfile($profile);
 
         $r = min(max($r, 0), 255);
         $g = min(max($g, 0), 255);
@@ -125,7 +125,7 @@ trait RGB {
     }
 
     public function toRGB(?string $profile = null): ColorSpaceRGB {
-        $profile = self::validateRGBProfile($profile);
+        $profile = ColorSpaceRGB::validateProfile($profile);
 
         $xyz = $this->_XYZ;
 
@@ -253,20 +253,5 @@ trait RGB {
             $aS + ($percentage * ($bS - $aS)),
             $aB + ($percentage * ($bB - $aB))
         );
-    }
-
-    protected static function validateRGBProfile(?string $profile = null): string {
-        if ($profile !== null) {
-            // This whole process of passing around profiles as strings is stupid as
-            // evidenced by the line below, but PHP has no way of handling passing around
-            // static classes yet.
-            if (!in_array(RGBProfile::class, class_parents($profile))) {
-                throw new \Exception("$profile is not an instance of " . RGBProfile::class . ".\n");
-            }
-
-            return $profile;
-        }
-
-        return self::$workingSpaceRGB;
     }
 }

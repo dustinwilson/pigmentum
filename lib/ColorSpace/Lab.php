@@ -33,4 +33,8 @@ class Lab extends ColorSpace {
         $this->_LCHab = new LCHab($this->_L, $c, $h);
         return $this->_LCHab;
     }
+
+    public function __toString() {
+        return "lab({$this->_L}, {$this->_a}, {$this->_b})";
+    }
 }

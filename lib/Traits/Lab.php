@@ -45,8 +45,6 @@ trait Lab {
 
         $xyz = $this->_XYZ;
 
-        $xr = $this->_XYZ / self::REFERENCE_WHITE[0];
-
         $xyz = [
             $xyz->X / self::REFERENCE_WHITE[0],
             $xyz->Y / self::REFERENCE_WHITE[1],

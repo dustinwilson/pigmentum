@@ -13,4 +13,9 @@ class LCHab extends \dW\Pigmentum\ColorSpace\ColorSpace {
         $this->_C = $C;
         $this->_H = $H;
     }
+
+    public function __toString() {
+        $className = strtolower(self::class);
+        return "$className({$this->_L}, {$this->_C}, {$this->_H})";
+    }
 }

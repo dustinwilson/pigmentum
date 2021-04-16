@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace dW\Pigmentum\ColorSpace;
 use dW\Pigmentum\Color as Color;
-use dW\Pigmentum\Color\Profile\RGB as Profile;
+use dW\Pigmentum\Profile\RGB as Profile;
 use dW\Pigmentum\ColorSpace\RGB\HSB as HSB;
 
 class RGB extends ColorSpace {
@@ -15,21 +15,18 @@ class RGB extends ColorSpace {
     protected $_Hex;
     protected $_HSB;
 
-    // Internal weak reference to XYZ values used when converting color profiles
+    // Reference to XYZ values used when converting color profiles
     protected $xyz;
 
 
     public function __construct(float $R, float $G, float $B, ?string $profile = null, XYZ $xyz, ?string $hex = null, ?HSB $HSB = null) {
-        if ($profile === null) {
-            $profile = Color::$workingSpaceRGB;
-        }
-        // Assume the color profile has already been checked.
+        $profile = self::validateProfile($profile);
 
         $this->_R = $R;
         $this->_G = $G;
         $this->_B = $B;
         $this->_profile = ($profile !== null) ? $profile : Color::$workingSpaceRGB;
-        $this->xyz = \WeakReference::create($xyz);
+        $this->xyz = clone $xyz;
 
         if ($hex !== null) {
             $this->_Hex = $hex;
@@ -41,8 +38,13 @@ class RGB extends ColorSpace {
     }
 
     public function convertToProfile(?string $profile = null): RGB {
-        $xyz = $this->xyz->get();
-        $color = Color::withXYZ($xyz->X, $xyz->Y, $xyz->Z);
+        $profile = self::validateProfile($profile);
+        // Nothing to do if the profile is the same.
+        if ($profile === $this->profile) {
+            return $this;
+        }
+
+        $color = Color::withXYZ($this->xyz->X, $this->xyz->Y, $this->xyz->Z);
         $rgb = $color->toRGB($profile);
 
         $this->_R = $rgb->R;
@@ -59,6 +61,10 @@ class RGB extends ColorSpace {
         }
 
         return $this;
+    }
+
+    public function convertToWorkingSpace(): RGB {
+        return $this->convertToProfile();
     }
 
     public function toHex(): string {
@@ -106,7 +112,22 @@ class RGB extends ColorSpace {
         return $this->_HSB;
     }
 
-    public function __toString(): string {
-        return $this->Hex;
+    public static function validateProfile(?string $profile = null): string {
+        if ($profile !== null) {
+            // This whole process of passing around profiles as strings is stupid as
+            // evidenced by the line below, but PHP has no way of handling passing around
+            // static classes yet.
+            if (!in_array(Profile::class, class_parents($profile))) {
+                throw new \Exception("$profile is not an instance of " . Profile::class . ".\n");
+            }
+
+            return $profile;
+        }
+
+        return Color::$workingSpaceRGB;
+    }
+
+    public function __toString() {
+        return "rgb({$this->_R}, {$this->_G}, {$this->_B})";
     }
 }

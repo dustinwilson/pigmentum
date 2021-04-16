@@ -12,4 +12,8 @@ class HSB extends \dW\Pigmentum\ColorSpace\ColorSpace {
         $this->_S = $S;
         $this->_B = $B;
     }
+
+    public function __toString() {
+        return "hsb({$this->_H}, {$this->_S}, {$this->_B})";
+    }
 }

@@ -33,4 +33,8 @@ class Luv extends ColorSpace {
         $this->_LCHuv = new LCHuv($this->_L, $c, $h);
         return $this->_LCHuv;
     }
+
+    public function __toString() {
+        return "luv({$this->_L}, {$this->_u}, {$this->_v})";
+    }
 }
