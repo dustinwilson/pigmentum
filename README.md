@@ -12,9 +12,9 @@ Library for manipulating color in PHP. Class exists to scratch my own itch, but 
 
 ## Usage ##
 
-Colors in Pigmentum is represented as a single color object. All color spaces in any application are converted to [XYZ][a] before converting back to another color. That's how it is handled here. At present Pigmentum handles [CIELAB][b], [CIELUV][c], [HSB/V][d], [LMS][e], [RGB][f], and [XYZ][a].
+Color in Pigmentum is represented as a single color object. All color spaces in any application are converted to [XYZ][a] before converting back to another color. That's how it is handled here. At present Pigmentum handles [CIELAB][b], [CIELUV][c], [HSB/V][d], [LMS][e], [RGB][f], and [XYZ][a].
 
-**This is a stub. The examples below only show a few things the library can do. In the future the class will be documented.**
+**This is a stub. The examples below only show a few things the library can do. In the future the library will be documented.**
 
 ### Convert from RGB Hex string to Lab ###
 
