@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace dW\Pigmentum\Profile;
 use dW\Pigmentum\Color as Color;
+use MathPHP\LinearAlgebra\MatrixFactory as MatrixFactory;
 use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
@@ -37,7 +38,7 @@ abstract class RGB extends \dW\Pigmentum\Profile\Profile {
         $Yb = 1;
         $Zb = (1 - $xb - $yb) / $yb;
 
-        $S = (new Matrix([
+        $S = (MatrixFactory::create([
             [ $Xr, $Xg, $Xb ],
             [ $Yr, $Yg, $Yb ],
             [ $Zr, $Zg, $Zb ]
@@ -50,7 +51,7 @@ abstract class RGB extends \dW\Pigmentum\Profile\Profile {
         $Sg = $SW->getRow(1)[0];
         $Sb = $SW->getRow(2)[0];
 
-        return new Matrix([
+        return MatrixFactory::create([
             [ $Sr * $Xr, $Sg * $Xg, $Sb * $Xb ],
             [ $Sr * $Yr, $Sg * $Yg, $Sb * $Yb ],
             [ $Sr * $Zr, $Sg * $Zg, $Sb * $Zb ],

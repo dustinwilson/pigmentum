@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace dW\Pigmentum\ColorSpace;
 use dW\Pigmentum\ColorSpace\XYZ\LMS as LMS;
+use MathPHP\LinearAlgebra\MatrixFactory as MatrixFactory;
 use MathPHP\LinearAlgebra\Matrix as Matrix;
 
 class XYZ extends ColorSpace {
@@ -48,17 +49,17 @@ class XYZ extends ColorSpace {
         $new = (new XYZ($new[0], $new[1], $new[2]))->LMS;
         $old = (new XYZ($old[0], $old[1], $old[2]))->LMS;
 
-        $mir = new Matrix([
+        $mir = MatrixFactory::create([
             [ $new->rho / $old->rho, 0, 0 ],
             [ 0, $new->gamma / $old->gamma, 0 ],
             [ 0, 0, $new->beta / $old->beta ]
         ]);
 
-        $bradford = new Matrix(self::BRADFORD);
+        $bradford = MatrixFactory::create(self::BRADFORD);
 
         $m1 = $bradford->inverse()->multiply($mir);
         $m2 = $m1->multiply($bradford);
-        $xyz = $m2->multiply(new Matrix([ [$this->_X], [$this->_Y], [$this->_Z] ]));
+        $xyz = $m2->multiply(MatrixFactory::create([ [$this->_X], [$this->_Y], [$this->_Z] ]));
 
         return new XYZ($xyz[0][0], $xyz[1][0], $xyz[2][0]);
     }

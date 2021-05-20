@@ -4,8 +4,6 @@ namespace dW\Pigmentum;
 use dW\Pigmentum\Color as Color;
 use dW\Pigmentum\ColorSpace\Lab as ColorSpaceLab;
 use dW\Pigmentum\ColorSpace\Lab\LCHab as ColorSpaceLCHab;
-use MathPHP\LinearAlgebra\Matrix as Matrix;
-use MathPHP\LinearAlgebra\Vector as Vector;
 
 trait Lab {
     protected $_Lab;

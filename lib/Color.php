@@ -2,8 +2,6 @@
 declare(strict_types=1);
 namespace dW\Pigmentum;
 use dW\Pigmentum\Profile as Profile;
-use MathPHP\LinearAlgebra\Matrix as Matrix;
-use MathPHP\LinearAlgebra\Vector as Vector;
 
 class Color {
     use RGB, Lab, Luv;

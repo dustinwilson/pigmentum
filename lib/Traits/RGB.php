@@ -6,7 +6,6 @@ use dW\Pigmentum\ColorSpace\RGB\HSB as ColorSpaceHSB;
 use dW\Pigmentum\ColorSpace\RGB as ColorSpaceRGB;
 use dW\Pigmentum\ColorSpace\XYZ as ColorSpaceXYZ;
 use dW\Pigmentum\Profile\RGB as RGBProfile;
-use MathPHP\LinearAlgebra\Matrix as Matrix;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
 trait RGB {

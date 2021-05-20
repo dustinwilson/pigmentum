@@ -4,8 +4,6 @@ namespace dW\Pigmentum;
 use dW\Pigmentum\Color as Color;
 use dW\Pigmentum\ColorSpace\Luv as ColorSpaceLuv;
 use dW\Pigmentum\ColorSpace\Luv\LCHuv as ColorSpaceLCHuv;
-use MathPHP\LinearAlgebra\Matrix as Matrix;
-use MathPHP\LinearAlgebra\Vector as Vector;
 
 trait Luv {
     protected $_Luv;
