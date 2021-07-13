@@ -34,11 +34,17 @@ class Palette {
         foreach ($this->colors as $i => $c) {
             // L*a*b* is used because RGB color values change when the color profile changes in
             // Photoshop.
-            $l = $c->Lab->L * 100 / 255;
-            $a = $c->Lab->a * 100 / 255;
-            $b = $c->Lab->b * 100 / 255;
+            $l = (int)($c->Lab->L * 100 / 255);
+            $a = (int)($c->Lab->a * 100 / 255);
+            $b = (int)($c->Lab->b * 100 / 255);
 
-            $swatches[$i] = pack('nCCccccn', 7, $l, $l, $a, $a, $b, $b, 0);
+            // Yes, this is correct. It's the remainder minus the quotient. Photoshop
+            // actually expects this as a representation of the remainder. ¯\_(ツ)_/¯
+            $lm = ($c->Lab->L * 100 % 255) - $l;
+            $am = ($c->Lab->a * 100 % 255) - $a;
+            $bm = ($c->Lab->b * 100 % 255) - $b;
+
+            $swatches[$i] = pack('nccccccn', 7, $l, $lm, $a, $am, $b, $bm, 0);
             $output .= $swatches[$i];
         }
 
