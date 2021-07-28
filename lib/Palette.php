@@ -32,19 +32,38 @@ class Palette {
 
         $swatches = [];
         foreach ($this->colors as $i => $c) {
-            // L*a*b* is used because RGB color values change when the color profile changes in
-            // Photoshop.
-            $l = (int)($c->Lab->L * 100 / 255);
-            $a = (int)($c->Lab->a * 100 / 255);
-            $b = (int)($c->Lab->b * 100 / 255);
+            $ch = [
+                round($c->Lab->L * 100) / 256,
+                round($c->Lab->a * 100) / 256,
+                round($c->Lab->b * 100) / 256
+            ];
 
-            // Yes, this is correct. It's the remainder minus the quotient. Photoshop
-            // actually expects this as a representation of the remainder. ¯\_(ツ)_/¯
-            $lm = ($c->Lab->L * 100 % 255) - $l;
-            $am = ($c->Lab->a * 100 % 255) - $a;
-            $bm = ($c->Lab->b * 100 % 255) - $b;
+            // Yes, 255 seems to be right here ¯\_(ツ)_/¯
+            $chm = [
+                round($c->Lab->L * 100) % 255,
+                round($c->Lab->a * 100) % 255,
+                round($c->Lab->b * 100) % 255
+            ];
 
-            $swatches[$i] = pack('nccccccn', 7, $l, $lm, $a, $am, $b, $bm, 0);
+            $pack = 'n';
+            foreach ($chm as $k => $v) {
+                $chm[$k] = $v - $ch[$k];
+
+                $pack .= ($ch[$k] >= 0) ? 'C' : 'c';
+
+                if ($chm[$k] >= 0) {
+                    $pack .= 'C';
+                    $chm[$k] = ceil($chm[$k]);
+                } else {
+                    $pack .= 'c';
+                    $chm[$k] = floor($chm[$k]);
+                }
+
+                $ch[$k] = floor($ch[$k]);
+            }
+            $pack .= 'n';
+
+            $swatches[$i] = pack($pack, 7, $ch[0], $chm[0], $ch[1], $chm[1], $ch[2], $chm[2], 0);
             $output .= $swatches[$i];
         }
 
@@ -149,7 +168,7 @@ class Palette {
         $tmpfile = tempnam(sys_get_temp_dir(), 'pigmentum');
 
         $zip = new \ZipArchive();
-        if ($zip->open($tmpfile, \ZipArchive::CREATE) !== true) {
+        if ($zip->open($tmpfile, \ZipArchive::OVERWRITE) !== true) {
             throw new \Exception("Cannot create temporary file \"$filename\".\n");
         }
 
