@@ -99,6 +99,44 @@ class Palette {
         return true;
     }
 
+    // Outputs to ArtRage's COL format
+    public function saveCOL(): string {
+        if (count($this->colors) === 0) {
+            throw new \Exception("There must be a color in the palette to be able to save as a palette file format.\n");
+        }
+
+        $count = count($this->colors, COUNT_RECURSIVE);
+        $output = implode("\0", str_split('AR2 COLOR PRESET', 1)) . "\0";
+        $output .= pack('CxCxCCxC', 13, 10, 143, 48, 255);
+        $output .= pack('PV', 48 + ($count * 10), $count);
+
+        // ArtRage only supports RGB for its palettes :/
+        $names = '';
+        foreach ($this->colors as $c) {
+            $output .= pack('C*', $c->RGB->B, $c->RGB->G, $c->RGB->R, 255);
+            $names .= (isset($c->name)) ? implode("\0", str_split($c->name, 1)) . "\0" : pack('cxcx', 37, 37);
+            $names .= pack('xx');
+        }
+
+        $output .= implode("\0", str_split('ARSwatchFileVersion-3', 1)) . "\0";
+        $output .= pack('xx') . $names;
+
+        return $output;
+    }
+
+    public function saveCOLFile(string $filename): bool {
+        $dirname = dirname($filename);
+        if (!is_dir($dirname)) {
+            throw new \Exception("Directory \"$dirname\" does not exist.\n");
+        }
+        if (!is_writable($dirname)) {
+            throw new \Exception("Directory \"$dirname\" is not writable.\n");
+        }
+
+        file_put_contents($filename, $this->saveCOL());
+        return true;
+    }
+
     public function saveKPL(int $columnCount = 8, bool $readonly = false): string {
         $tmpfile = $this->createKPLTemp($columnCount, $readonly);
         $output = file_get_contents($tmpfile);
