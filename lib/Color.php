@@ -4,7 +4,7 @@ namespace dW\Pigmentum;
 use dW\Pigmentum\Profile as Profile;
 
 class Color {
-    use RGB, Lab, Luv;
+    use RGB, Lab;
 
     const ILLUMINANT_D65 = [ 0.95047, 1, 1.08883 ];
     const ILLUMINANT_D50 = [ 0.96422, 1, 0.82521 ];

@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1ccc6607a8544fcd790719b9cbcd3d87",
+    "content-hash": "d8466e6c73515c9be3e52bdedff83caf",
     "packages": [
         {
             "name": "markrogoyski/math-php",
-            "version": "v2.0.0",
+            "version": "v2.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/markrogoyski/math-php.git",
-                "reference": "4dab1f0efe96b547bd21b17b66a5b7efec5902b3"
+                "reference": "ca71ca97dc136e7bb9e9e1fe05782f343a5692d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/markrogoyski/math-php/zipball/4dab1f0efe96b547bd21b17b66a5b7efec5902b3",
-                "reference": "4dab1f0efe96b547bd21b17b66a5b7efec5902b3",
+                "url": "https://api.github.com/repos/markrogoyski/math-php/zipball/ca71ca97dc136e7bb9e9e1fe05782f343a5692d4",
+                "reference": "ca71ca97dc136e7bb9e9e1fe05782f343a5692d4",
                 "shasum": ""
             },
             "require": {
@@ -77,9 +77,9 @@
             ],
             "support": {
                 "issues": "https://github.com/markrogoyski/math-php/issues",
-                "source": "https://github.com/markrogoyski/math-php/tree/v2.0.0"
+                "source": "https://github.com/markrogoyski/math-php/tree/v2.5.0"
             },
-            "time": "2021-05-09T19:53:17+00:00"
+            "time": "2021-11-22T05:14:07+00:00"
         }
     ],
     "packages-dev": [],
@@ -92,8 +92,8 @@
         "php": ">=7.4.0",
         "ext-dom": "*",
         "ext-zip": "*",
-        "ext-mbstring": "^8.0"
+        "ext-mbstring": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "2.1.0"
 }

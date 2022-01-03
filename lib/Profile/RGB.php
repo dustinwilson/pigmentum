@@ -38,20 +38,20 @@ abstract class RGB extends \dW\Pigmentum\Profile\Profile {
         $Yb = 1;
         $Zb = (1 - $xb - $yb) / $yb;
 
-        $S = (MatrixFactory::create([
+        $S = (@MatrixFactory::create([
             [ $Xr, $Xg, $Xb ],
             [ $Yr, $Yg, $Yb ],
             [ $Zr, $Zg, $Zb ]
         ]))->inverse();
 
-        $W = new Vector(static::illuminant);
+        $W = @new Vector(static::illuminant);
         $SW = $S->multiply($W);
 
         $Sr = $SW->getRow(0)[0];
         $Sg = $SW->getRow(1)[0];
         $Sb = $SW->getRow(2)[0];
 
-        return MatrixFactory::create([
+        return @MatrixFactory::create([
             [ $Sr * $Xr, $Sg * $Xg, $Sb * $Xb ],
             [ $Sr * $Yr, $Sg * $Yg, $Sb * $Yb ],
             [ $Sr * $Zr, $Sg * $Zg, $Sb * $Zb ],

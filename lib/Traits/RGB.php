@@ -99,7 +99,7 @@ trait RGB {
         $g = min(max($g, 0), 255);
         $b = min(max($b, 0), 255);
 
-        $vector = new Vector([
+        $vector = @new Vector([
             $profile::inverseCompanding($r / 255),
             $profile::inverseCompanding($g / 255),
             $profile::inverseCompanding($b / 255)
@@ -148,7 +148,7 @@ trait RGB {
             }
 
             $matrix = $profile::getXYZMatrix()->inverse();
-            $uncompandedVector = $matrix->vectorMultiply(new Vector([ $xyz->X, $xyz->Y, $xyz->Z ]));
+            $uncompandedVector = $matrix->vectorMultiply(@new Vector([ $xyz->X, $xyz->Y, $xyz->Z ]));
 
             $this->_RGB = new ColorSpaceRGB(
                 min(max($profile::companding($uncompandedVector[0]) * 255, 0), 255),

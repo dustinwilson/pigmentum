@@ -19,7 +19,7 @@ class RGB extends ColorSpace {
     protected $xyz;
 
 
-    public function __construct(float $R, float $G, float $B, ?string $profile = null, XYZ $xyz, ?string $hex = null, ?HSB $HSB = null) {
+    public function __construct(float $R, float $G, float $B, ?string $profile = null, XYZ $xyz = null, ?string $hex = null, ?HSB $HSB = null) {
         $profile = self::validateProfile($profile);
 
         $this->_R = $R;
