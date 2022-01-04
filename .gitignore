@@ -1,5 +1,6 @@
 # pigmentum specific
 test*.php
+test*.js
 
 # General
 *.DS_Store
