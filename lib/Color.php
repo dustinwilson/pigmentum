@@ -18,6 +18,7 @@ class Color {
 
     // RGB color profiles
     const PROFILE_SRGB = '\dW\Pigmentum\Profile\RGB\sRGB';
+    const PROFILE_SIMPLE_SRGB = '\dW\Pigmentum\Profile\RGB\Simple_sRGB';
     const PROFILE_ADOBERGB1998 = '\dW\Pigmentum\Profile\RGB\AdobeRGB1998';
     const PROFILE_PROPHOTORGB = '\dW\Pigmentum\Profile\RGB\ProPhoto';
 
@@ -44,9 +45,59 @@ class Color {
         return new self(max(0, $X), max(0, $Y), max(0, $Z), $name);
     }
 
+    // APCA contrast between $this (text color) and a supplied background color
+    public function apcaContrast(Color $backgroundColor): float {
+        // APCA's current algorithm only works on sRGB, and my attempts to get it to work
+        // with other RGB color profiles have met with failure thus far. It uses a really
+        // weird XYZ D65 color space to calculate contrast, so simply using a supplied
+        // color's XYZ values doesn't work.
 
-    // Calculates the WCAG contrast ratio between the color and a supplied one.
-    public function contrastRatio(Color $color): float {
+        // Converting to sRGB isn't ideal because colors can exist outside its gamut. No
+        // idea how to circumvent this.
+        $txt = $this->toRGB(self::PROFILE_SRGB);
+        $bg = $backgroundColor->toRGB(self::PROFILE_SRGB);
+
+        $profile = $txt->profile;
+        $matrix = $profile::getXYZMatrix()[1];
+        $gamma = 2.4;
+
+        $txtY = $matrix[0] * (($txt->R / 255) ** $gamma) + $matrix[1] * (($txt->G / 255) ** $gamma) + $matrix[2] * (($txt->B / 255) ** $gamma);
+        $bgY = $matrix[0] * (($bg->R / 255) ** $gamma) + $matrix[1] * (($bg->G / 255) ** $gamma) + $matrix[2] * (($bg->B / 255) ** $gamma);
+
+        $txtY = ($txtY > 0.022) ? $txtY : $txtY + ((0.022 - $txtY) ** 1.414);
+        $bgY = ($bgY > 0.022) ? $bgY : $bgY + ((0.022 - $bgY) ** 1.414);
+        if (abs($bgY - $txtY) < 0.0005) {
+            return 0;
+        }
+
+        // For normal polarity, black text on white
+        if ($bgY > $txtY) {
+            $SAPC = ($bgY ** 0.56 - $txtY ** 0.57) * 1.14;
+            if ($SAPC < 0.001) {
+                $output = 0;
+            } elseif ($SAPC < 0.035991) {
+                $output = $SAPC - $SAPC * 27.7847239587675 * 0.027;
+            } else {
+                $output = $SAPC - 0.027;
+            }
+        }
+        // For inverse polarity, white text on black
+        else {
+            $SAPC = ($bgY ** 0.65 - $txtY ** 0.62) * 1.14;
+            if ($SAPC > -0.001) {
+                $output = 0;
+            } elseif ($SAPC > -0.035991) {
+                $output = $SAPC - $SAPC * 27.7847239587675 * 0.027;
+            } else {
+                $output = $SAPC + 0.027;
+            }
+        }
+
+        return $output * 100;
+    }
+
+    // Calculates the WCAG2 contrast ratio between the color and a supplied one.
+    public function wcag2Contrast(Color $color): float {
         $RGBa = $this->RGB;
         $RGBb = $color->RGB;
         $wsA = $RGBa->workingSpace;
@@ -61,8 +112,6 @@ class Color {
         return ($a > $b) ? $ratio : 1 / $ratio;
     }
 
-    // CIE2000 distance formula, takes perception into account when calculating
-    // distance
     public function deltaE(Color $color): float {
         $Lab1 = $this->Lab;
         $Lab2 = $color->Lab;

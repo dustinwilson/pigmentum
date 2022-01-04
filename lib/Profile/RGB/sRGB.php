@@ -2,14 +2,8 @@
 declare(strict_types=1);
 namespace dW\Pigmentum\Profile\RGB;
 
-class sRGB extends \dW\Pigmentum\Profile\RGB {
+class sRGB extends \dW\Pigmentum\Profile\RGB\Simple_sRGB {
     const name = 'sRGB IEC61966-2.1';
-
-    const chromaticity = [
-        [ 0.6400, 0.3300 ],
-        [ 0.3000, 0.6000 ],
-        [ 0.1500, 0.0600 ]
-    ];
 
     // sRGB has its own companding methods
     public static function companding(float $channel): float {
