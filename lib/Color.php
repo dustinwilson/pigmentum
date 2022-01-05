@@ -55,8 +55,8 @@ class Color {
 
         // Converting to sRGB isn't ideal because colors can exist outside its gamut. No
         // idea how to circumvent this.
-        $txt = $this->toRGB(self::PROFILE_SRGB);
-        $bg = $backgroundColor->toRGB(self::PROFILE_SRGB);
+        $txt = $this->toRGB();
+        $bg = $backgroundColor->toRGB();
 
         $profile = $txt->profile;
         $matrix = $profile::getXYZMatrix()[1];

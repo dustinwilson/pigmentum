@@ -125,6 +125,9 @@ trait RGB {
 
     public function toRGB(?string $profile = null): ColorSpaceRGB {
         $profile = ColorSpaceRGB::validateProfile($profile);
+        if ($this->_RGB !== null && $this->_RGB->profile === $profile) {
+            return $this->_RGB;
+        }
 
         $xyz = $this->_XYZ;
 
