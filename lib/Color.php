@@ -21,6 +21,7 @@ class Color {
     const PROFILE_SIMPLE_SRGB = '\dW\Pigmentum\Profile\RGB\Simple_sRGB';
     const PROFILE_ADOBERGB1998 = '\dW\Pigmentum\Profile\RGB\AdobeRGB1998';
     const PROFILE_PROPHOTORGB = '\dW\Pigmentum\Profile\RGB\ProPhoto';
+    const PROFILE_DISPLAYP3 = '\dW\Pigmentum\Profile\RGB\DisplayP3';
 
     public $name;
 
