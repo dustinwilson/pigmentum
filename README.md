@@ -112,7 +112,7 @@ public static function withLab(
 ```php
 namespace dW\Pigmentum\Color;
 
-Color::withRGB(57, 35, 38);
+Color::withLab(57, 35, 38);
 ```
 
 #### dW\Pigmentum\Color::withLCHab ####
@@ -166,7 +166,17 @@ public static function withRGB(
 ```php
 namespace dW\Pigmentum\Color;
 
-Color::withRGB(202, 110, 72);
+$sRGBColor = Color::withRGB(202, 110, 72);
+$adobeRGBColor = Color::withRGB(202, 110, 72, null, Color::PROFILE_ADOBERGB1998);
+echo $sRGBColor->XYZ . "\n";
+echo $adobeRGBColor->XYZ;
+```
+
+Outputs:
+
+```
+xyz(0.32686782145478, 0.24712385141221, 0.069650535956488)
+xyz(0.40672668489701, 0.28866272343639, 0.067355999640287)
 ```
 
 #### dW\Pigmentum\Color::withRGBHex ####
@@ -190,7 +200,17 @@ public static function withRGBHex(
 ```php
 namespace dW\Pigmentum\Color;
 
-Color::withRGBHex('#ca6e48');
+$sRGBColor = Color::withRGBHex('#ca6e48');
+$adobeRGBColor = Color::withRGBHex('#ca6e48', null, Color::PROFILE_ADOBERGB1998);
+echo $sRGBColor->XYZ . "\n";
+echo $adobeRGBColor->XYZ;
+```
+
+Outputs:
+
+```
+xyz(0.32686782145478, 0.24712385141221, 0.069650535956488)
+xyz(0.40672668489701, 0.28866272343639, 0.067355999640287)
 ```
 
 #### dW\Pigmentum\Color::withHSB ####
@@ -252,7 +272,24 @@ Color::withXYZ(0.3267, 0.2471, 0.0696);
 Returns the L\*a\*b\* color space for the color.
 
 ```php
-public static function toLab(): dW\Pigmentum\ColorSpace\Lab;
+public function toLab(): dW\Pigmentum\ColorSpace\Lab;
+```
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::withHSB(18, 64, 79);
+echo $color->toLab() . "\n";
+echo $color->Lab;
+```
+
+Outputs:
+
+```
+lab(56.977258534337, 34.064915293425, 37.682616197795)
+lab(56.977258534337, 34.064915293425, 37.682616197795)
 ```
 
 #### dW\Pigmentum\Color::toRGB ####
@@ -260,17 +297,187 @@ public static function toLab(): dW\Pigmentum\ColorSpace\Lab;
 Returns the RGB color space for the color.
 
 ```php
-public static function toRGB(
+public function toRGB(
     ?string $profile = null
 ): dW\Pigmentum\ColorSpace\RGB;
 ```
 
 * `profile`: A string representation of the class name of the color profile the channel values are in, defaults to the current working space
 
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::withXYZ(0.3267, 0.2471, 0.0696);
+echo $color->toRGB() . "\n";
+echo $color->RGB;
+```
+
+Outputs:
+
+```
+rgb(201.92948812963, 110.03872289405, 71.957047956757)
+rgb(201.92948812963, 110.03872289405, 71.957047956757)
+```
+
 #### dW\Pigmentum\Color::toXYZ ####
 
 Returns the XYZ color space for the color.
 
 ```php
-public static function toXYZ(): dW\Pigmentum\ColorSpace\XYZ;
+public function toXYZ(): dW\Pigmentum\ColorSpace\XYZ;
+```
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::withRGBHex('#ca6e48');
+echo $color->toXYZ() . "\n";
+echo $color->XYZ;
+```
+
+Outputs:
+
+```
+xyz(0.32686782145478, 0.24712385141221, 0.069650535956488)
+xyz(0.32686782145478, 0.24712385141221, 0.069650535956488)
+```
+
+
+#### dW\Pigmentum\Color::average ####
+
+Averages the provided colors in the L\*a\*b\* color space and returns a new Color object. Identical to `dW\Pigmentum\Color::averageWithLab`.
+
+```php
+public static function average(
+    dW\Pigmentum\Color ...$colors
+): dW\Pigmentum\Color;
+```
+
+* `colors`: One or more colors to average.
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::average(Color::withRGBHex('#ca6e48'), Color::withXYZ(0.0864, 0.0868, 0.1409), Color::withLab(100, 0, 0));
+echo $color->RGB->Hex;
+```
+
+Outputs:
+
+```
+#b49393
+```
+
+#### dW\Pigmentum\Color::averageWithLab ####
+
+Averages the provided colors in the L\*a\*b\* color space and returns a new Color object. Identical to `dW\Pigmentum\Color::average`.
+
+```php
+public static function averageWithLab(
+    dW\Pigmentum\Color ...$colors
+): dW\Pigmentum\Color;
+```
+
+* `colors`: One or more colors to average.
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::averageWithLab(Color::withRGBHex('#ca6e48'), Color::withXYZ(0.0864, 0.0868, 0.1409), Color::withLab(100, 0, 0));
+echo $color->RGB->Hex;
+```
+
+Outputs:
+
+```
+#b49393
+```
+
+#### dW\Pigmentum\Color::averageWithLCHab ####
+
+Averages the provided colors in the LCH (L\*a\*b\*) color space and returns a new Color object.
+
+```php
+public static function averageWithLCHab(
+    dW\Pigmentum\Color ...$colors
+): dW\Pigmentum\Color;
+```
+
+* `colors`: One or more colors to average.
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::averageWithLCHab(Color::withRGBHex('#ca6e48'), Color::withXYZ(0.0864, 0.0868, 0.1409), Color::withLab(100, 0, 0));
+echo $color->RGB->Hex;
+```
+
+Outputs:
+
+```
+#9a9f71
+```
+
+#### dW\Pigmentum\Color::averageWithRGB ####
+
+Averages the provided colors in the RGB color space and returns a new Color object.
+
+```php
+public static function averageWithRGB(
+    dW\Pigmentum\Color ...$colors
+): dW\Pigmentum\Color;
+```
+
+* `colors`: One or more colors to average.
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::averageWithRGB(Color::withRGBHex('#ca6e48'), Color::withXYZ(0.0864, 0.0868, 0.1409), Color::withLab(100, 0, 0));
+echo $color->RGB->Hex;
+```
+
+Outputs:
+
+```
+#b09595
+```
+
+#### dW\Pigmentum\Color::averageWithHSB ####
+
+Averages the provided colors in the HSB color space and returns a new Color object.
+
+```php
+public static function averageWithHSB(
+    dW\Pigmentum\Color ...$colors
+): dW\Pigmentum\Color;
+```
+
+* `colors`: One or more colors to average.
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::averageWithHSB(Color::withRGBHex('#ca6e48'), Color::withXYZ(0.0864, 0.0868, 0.1409), Color::withLab(100, 0, 0));
+echo $color->RGB->Hex;
+```
+
+Outputs:
+
+```
+#a9c07c
 ```

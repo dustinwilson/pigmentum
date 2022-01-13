@@ -52,7 +52,7 @@ class Color {
     }
 
 
-    public static function toXYZ(): ColorSpaceXYZ {
+    public function toXYZ(): ColorSpaceXYZ {
         return $this->_XYZ;
     }
 

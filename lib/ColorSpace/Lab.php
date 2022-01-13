@@ -12,7 +12,7 @@ class Lab extends ColorSpace implements \Stringable {
     protected ?ColorSpaceLCHab $_LCHab = null;
 
 
-    public function __construct(float $L, float $a, float $b, ?LCHab $LCHab = null) {
+    public function __construct(float $L, float $a, float $b, ?ColorSpaceLCHab $LCHab = null) {
         $this->_L = $L;
         $this->_a = $a;
         $this->_b = $b;
