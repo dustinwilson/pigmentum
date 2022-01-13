@@ -6,8 +6,6 @@ use dW\Pigmentum\Color as Color;
 class DisplayP3 extends \dW\Pigmentum\Profile\RGB {
     const name = 'Display P3';
 
-    const illuminant = Color::ILLUMINANT_D65;
-
     const chromaticity = [
         [ 0.680, 0.320 ],
         [ 0.265, 0.690 ],

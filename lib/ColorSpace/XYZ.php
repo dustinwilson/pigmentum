@@ -27,7 +27,7 @@ class XYZ extends ColorSpace implements \Stringable {
     }
 
 
-    protected function toLMS(): ColorSpaceLMS {
+    public function toLMS(): ColorSpaceLMS {
         if ($this->_LMS !== null) {
             return $this->_LMS;
         }

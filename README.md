@@ -814,13 +814,24 @@ Outputs:
 
 ```php
 class dW\Pigmentum\ColorSpace\Lab implements \Stringable {
+    public readonly float $L;
+    public readonly float $a;
+    public readonly float $b;
+
+
     public function toLCHab(): dW\Pigmentum\ColorSpace\Lab\LCHab;
 }
 ```
 
+#### Properties ####
+
+* *L* (float): The Lightness channel for the color space.
+* *a* (float): The a channel for the color space.
+* *b* (float): The b channel for the color space.
+
 ---
 
-#### dW\Pigmentum\ColorSpaceLab::toLCHab ####
+#### dW\Pigmentum\ColorSpace\Lab::toLCHab ####
 
 Returns the LCH (L\*a\*b\*) color space for the color.
 
@@ -849,6 +860,11 @@ lchab(56.794104953129, 51.406997165638, 47.294986435325)
 
 ```php
 class dW\Pigmentum\ColorSpace\RGB implements \Stringable {
+    public readonly float $R;
+    public readonly float $G;
+    public readonly float $B;
+
+
     public function convertToProfile(?string $profile = null): dW\Pigmentum\ColorSpace\RGB;
     public function convertToWorkingSpace(?string $profile = null): dW\Pigmentum\ColorSpace\RGB;
 
@@ -857,9 +873,15 @@ class dW\Pigmentum\ColorSpace\RGB implements \Stringable {
 }
 ```
 
+#### Properties ####
+
+* *R* (float): The R channel for the color space.
+* *G* (float): The G channel for the color space.
+* *B* (float): The B channel for the color space.
+
 ---
 
-#### dW\Pigmentum\ColorSpaceRGB::convertToProfile ####
+#### dW\Pigmentum\ColorSpace\RGB::convertToProfile ####
 
 Returns a RGB color space using the supplied profile. Identical to `dW\Pigmentum\ColorSpaceLab::convertToWorkingSpace`.
 
@@ -891,7 +913,7 @@ rgb(189.75848271875, 114.65981939776, 80.081758134176)
 
 ---
 
-#### dW\Pigmentum\ColorSpaceRGB::convertToWorkingSpace ####
+#### dW\Pigmentum\ColorSpace\RGB::convertToWorkingSpace ####
 
 Returns a RGB color space using the supplied profile. Identical to `dW\Pigmentum\ColorSpaceLab::convertToProfile`.
 
@@ -923,7 +945,7 @@ rgb(189.75848271875, 114.65981939776, 80.081758134176)
 
 ---
 
-#### dW\Pigmentum\ColorSpaceRGB::toHex ####
+#### dW\Pigmentum\ColorSpace\RGB::toHex ####
 
 Returns a RGB hex string for the color.
 
@@ -950,7 +972,7 @@ lchab(56.794104953129, 51.406997165638, 47.294986435325)
 
 ---
 
-#### dW\Pigmentum\ColorSpaceRGB::toHSB ####
+#### dW\Pigmentum\ColorSpace\RGB::toHSB ####
 
 Returns the HSB color space for the color.
 
@@ -973,4 +995,218 @@ Outputs:
 ```
 hsb(17.538461538462, 64.356435643564, 79.21568627451)
 hsb(17.538461538462, 64.356435643564, 79.21568627451)
+```
+
+### dW\Pigmentum\ColorSpace\XYZ ###
+
+```php
+class dW\Pigmentum\ColorSpace\XYZ implements \Stringable {
+    public function toLMS(): dW\Pigmentum\ColorSpace\XYZ\LMS;
+    public function chromaticAdaptation(array $new, array $old): dW\Pigmentum\ColorSpace\XYZ;
+}
+```
+
+#### Properties ####
+
+* *X* (float): The X channel for the color space.
+* *Y* (float): The Y channel for the color space.
+* *Z* (float): The Z channel for the color space.
+
+---
+
+#### dW\Pigmentum\ColorSpace\XYZ::toLMS ####
+
+Returns the LMS color space for the color.
+
+```php
+public function toLMS(): dW\Pigmentum\ColorSpace\XYZ\LMS;
+```
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::withRGBHex('#ca6e48');
+echo $color->toXYZ()->toLMS() . "\n";
+echo $color->XYZ->LMS;
+```
+
+Outputs:
+
+```
+lms(0.34717158449701, 0.18078665440905, 0.067499366253654)
+lms(0.34717158449701, 0.18078665440905, 0.067499366253654)
+```
+
+---
+
+#### dW\Pigmentum\ColorSpace\XYZ::chromaticAdaptation ####
+
+Converts an XYZ color from one illuminant to another.
+
+```php
+public function chromaticAdaptation(array $new, array $old): dW\Pigmentum\ColorSpace\XYZ;
+```
+
+* `new`: The new illuminant to convert to
+* `old`: The old illuminant
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+// XYZ D50
+$color = Color::withRGBHex('#ca6e48')->XYZ;
+echo $color . "\n";
+// XYZ D65
+echo $color->chromaticAdaptation(Color::ILLUMINANT_D65, Color::ILLUMINANT_D50);
+```
+
+Outputs:
+
+```
+xyz(0.32686782145478, 0.24712385141221, 0.069650535956488)
+xyz(0.31105305562791, 0.24179691491906, 0.091586962737883)
+```
+
+### dW\Pigmentum\ColorSpace\Lab\LCHab ###
+
+```php
+class dW\Pigmentum\ColorSpace\Lab\LCHab implements \Stringable {
+    public readonly float $L;
+    public readonly float $C;
+    public readonly float $H;
+}
+```
+
+#### Properties ####
+
+* *L* (float): The Lightness channel for the color space.
+* *C* (float): The Chroma channel for the color space.
+* *H* (float): The Hue channel for the color space.
+
+### dW\Pigmentum\ColorSpace\RGB\HSB ###
+
+```php
+class dW\Pigmentum\ColorSpace\RGB\HSB implements \Stringable {
+    public readonly float $H;
+    public readonly float $S;
+    public readonly float $B;
+}
+```
+
+#### Properties ####
+
+* *H* (float): The Hue channel for the color space.
+* *S* (float): The Saturation channel for the color space.
+* *B* (float): The Brightness channel for the color space.
+
+### dW\Pigmentum\ColorSpace\XYZ\LMS ###
+
+```php
+class dW\Pigmentum\ColorSpace\XYZ\LMS implements \Stringable {
+    public readonly float $rho;
+    public readonly float $gamma;
+    public readonly float $beta;
+}
+```
+
+#### Properties ####
+
+* *rho* (float): The Rho (L) channel for the color space.
+* *gamma* (float): The Gamma (M) channel for the color space.
+* *beta* (float): The Beta (S) channel for the color space.
+
+### dW\Pigmentum\Profile\RGB ###
+
+This is the base abstract color profile class. All RGB color profiles must inherit from this.
+
+```php
+abstract class dW\Pigmentum\Profile\RGB {
+    const illuminant = dW\Pigmentum\Color::ILLUMINANT_D65;
+    const chromaticity = [];
+    const gamma = 2.2;
+    const name = '';
+
+
+    public static function companding(float $channel): float;
+    public static function inverseCompanding(float $channel): float;
+    public static function getXYZMatrix(): MathPHP\LinearAlgebra\Matrix\Matrix;
+}
+```
+
+### dW\Pigmentum\Profile\RGB\AdobeRGB1998 ###
+
+```php
+class dW\Pigmentum\Profile\AdobeRGB1998 extends dW\Pigmentum\Profile\RGB {
+    const name = 'Adobe RGB (1998)';
+
+    const chromaticity = [
+        [ 0.6400, 0.3300 ],
+        [ 0.2100, 0.7100 ],
+        [ 0.1500, 0.0600 ]
+    ];
+}
+```
+
+### dW\Pigmentum\Profile\RGB\DisplayP3 ###
+
+```php
+class dW\Pigmentum\Profile\AdobeRGB1998 extends dW\Pigmentum\Profile\RGB {
+    const name = 'Display P3';
+
+    const chromaticity = [
+        [ 0.680, 0.320 ],
+        [ 0.265, 0.690 ],
+        [ 0.150, 0.060 ]
+    ];
+}
+```
+
+### dW\Pigmentum\Profile\RGB\ProPhoto ###
+
+```php
+class dW\Pigmentum\Profile\ProPhoto extends dW\Pigmentum\Profile\RGB {
+    const name = 'ProPhoto RGB';
+
+    const illuminant = Color::ILLUMINANT_D50;
+
+    const chromaticity = [
+        [ 0.7347, 0.2653 ],
+        [ 0.1596, 0.8404 ],
+        [ 0.0366, 0.0001 ]
+    ];
+
+    const gamma = 1.8;
+}
+```
+
+### dW\Pigmentum\Profile\RGB\Simple_sRGB ###
+
+```php
+class dW\Pigmentum\Profile\Simple_sRGB extends dW\Pigmentum\Profile\RGB {
+    const name = 'Simple sRGB';
+
+    const chromaticity = [
+        [ 0.6400, 0.3300 ],
+        [ 0.3000, 0.6000 ],
+        [ 0.1500, 0.0600 ]
+    ];
+}
+```
+
+### dW\Pigmentum\Profile\RGB\sRGB ###
+
+```php
+class dW\Pigmentum\Profile\Simple_sRGB extends dW\Pigmentum\Profile\RGB {
+    const name = 'sRGB IEC61966-2.1';
+
+    const chromaticity = [
+        [ 0.6400, 0.3300 ],
+        [ 0.3000, 0.6000 ],
+        [ 0.1500, 0.0600 ]
+    ];
+}
 ```

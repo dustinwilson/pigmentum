@@ -14,6 +14,6 @@ class LMS extends \dW\Pigmentum\ColorSpace\ColorSpace implements \Stringable {
     }
 
     public function __toString() {
-        return "lms({$this->_L}, {$this->_M}, {$this->_S})";
+        return "lms({$this->_rho}, {$this->_gamma}, {$this->_beta})";
     }
 }
