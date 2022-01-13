@@ -1,5 +1,5 @@
 {
-    "name": "dw/pigmentum",
+    "name": "dustinwilson/pigmentum",
     "description": "Library for manipulating and converting between CIE Color spaces",
     "type": "library",
     "license": "MIT",
