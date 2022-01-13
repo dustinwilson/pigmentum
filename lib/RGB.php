@@ -1,18 +1,23 @@
 <?php
 declare(strict_types=1);
 namespace dW\Pigmentum;
-use dW\Pigmentum\Color as Color;
-use dW\Pigmentum\ColorSpace\RGB\HSB as ColorSpaceHSB;
-use dW\Pigmentum\ColorSpace\RGB as ColorSpaceRGB;
-use dW\Pigmentum\ColorSpace\XYZ as ColorSpaceXYZ;
+use dW\Pigmentum\ColorSpace\{
+    RGB\HSB as ColorSpaceHSB,
+    RGB as ColorSpaceRGB,
+    XYZ as ColorSpaceXYZ
+};
 use dW\Pigmentum\Profile\RGB as RGBProfile;
 use MathPHP\LinearAlgebra\Vector as Vector;
 
 trait RGB {
-    protected $_RGB;
+    protected ?ColorSpaceRGB $_RGB = null;
 
 
-    static function withRGBHex(string $hex, ?string $name = null, ?string $profile = null): Color {
+    public static function withRGB(float $R, float $G, float $B, ?string $name = null, ?string $profile = null): Color {
+        return self::_withRGB($R, $G, $B, $name, $profile);
+    }
+
+    public static function withRGBHex(string $hex, ?string $name = null, ?string $profile = null): Color {
         $profile = ColorSpaceRGB::validateProfile($profile);
 
         if (strpos($hex, '#') !== 0) {
@@ -27,28 +32,28 @@ trait RGB {
         return self::_withRGB($r, $g, $b, $name, $profile, $hex);
     }
 
-    static function withHSB(float $h, float $s, float $v, ?string $name = null, ?string $profile = null): Color {
+    public static function withHSB(float $H, float $S, float $B, ?string $name = null, ?string $profile = null): Color {
         $profile = ColorSpaceRGB::validateProfile($profile);
 
-        $ss = $s / 100;
-        $vv = $v / 100 * 255;
+        $ss = $S / 100;
+        $vv = $B / 100 * 255;
 
-        if ($s == 0) {
+        if ($S == 0) {
             $r = $g = $b = $vv;
         } else {
-            if ($h === 360) {
-                $h = 0;
+            if ($H === 360) {
+                $H = 0;
             }
 
-            if ($h > 360) {
-                $h -= 360;
+            if ($H > 360) {
+                $H -= 360;
             }
 
-            if ($h < 0) {
-                $h += 360;
+            if ($H < 0) {
+                $H += 360;
             }
 
-            $hh = $h / 60;
+            $hh = $H / 60;
 
             $i = floor($hh);
             $f = $hh - $i;
@@ -89,39 +94,40 @@ trait RGB {
             }
         }
 
-        return self::_withRGB($r, $g, $b, $name, $profile, null, new ColorSpaceHSB($h, $s, $v));
+        return self::_withRGB($r, $g, $b, $name, $profile, null, new ColorSpaceHSB($H, $S, $B));
     }
 
-    private static function _withRGB(float $r, float $g, float $b, ?string $name = null, ?string $profile = null, ?string $hex = null, ?ColorSpaceHSB $HSB = null): Color {
-        $profile = ColorSpaceRGB::validateProfile($profile);
 
-        $r = min(max($r, 0), 255);
-        $g = min(max($g, 0), 255);
-        $b = min(max($b, 0), 255);
+    public static function averageWithRGB(Color ...$colors): Color {
+        $aSum = 0;
+        $bSum = 0;
+        $cSum = 0;
+        $length = sizeof($colors);
 
-        $vector = @new Vector([
-            $profile::inverseCompanding($r / 255),
-            $profile::inverseCompanding($g / 255),
-            $profile::inverseCompanding($b / 255)
-        ]);
-
-        $xyz = ($profile::getXYZMatrix())->vectorMultiply($vector);
-        $xyz = new ColorSpaceXYZ($xyz[0], $xyz[1], $xyz[2]);
-
-        if ($profile::illuminant !== self::REFERENCE_WHITE) {
-            $xyz = $xyz->chromaticAdaptation(self::REFERENCE_WHITE, $profile::illuminant);
+        foreach ($colors as $c) {
+            $aSum += $c->RGB->R;
+            $bSum += $c->RGB->G;
+            $cSum += $c->RGB->B;
         }
 
-        $color = new self($xyz->X, $xyz->Y, $xyz->Z, $name, [
-            'RGB' => new ColorSpaceRGB($r, $g, $b, $profile, $xyz, $hex, $HSB)
-        ]);
-
-        return $color;
+        return self::withRGB($aSum / $length, $bSum / $length, $cSum / $length);
     }
 
-    public static function withRGB(float $r, float $g, float $b, ?string $name = null, ?string $profile = null): Color {
-        return self::_withRGB($r, $g, $b, $name, $profile);
+    public static function averageWithHSB(Color ...$colors): Color {
+        $aSum = 0;
+        $bSum = 0;
+        $cSum = 0;
+        $length = sizeof($colors);
+
+        foreach ($colors as $c) {
+            $aSum += $c->RGB->HSB->H;
+            $bSum += $c->RGB->HSB->S;
+            $cSum += $c->RGB->HSB->B;
+        }
+
+        return self::withHSB($aSum / $length, $bSum / $length, $cSum / $length);
     }
+
 
     public function toRGB(?string $profile = null): ColorSpaceRGB {
         $profile = ColorSpaceRGB::validateProfile($profile);
@@ -166,25 +172,6 @@ trait RGB {
     }
 
 
-    public static function averageWithRGB(Color ...$colors): Color {
-        $aSum = 0;
-        $bSum = 0;
-        $cSum = 0;
-        $length = sizeof($colors);
-
-        foreach ($colors as $c) {
-            $aSum += $c->RGB->R;
-            $bSum += $c->RGB->G;
-            $cSum += $c->RGB->B;
-        }
-
-        return self::withRGB($aSum / $length, $bSum / $length, $cSum / $length);
-    }
-
-    public static function average(Color ...$colors): Color {
-        return self::averageWithRGB(...$colors);
-    }
-
     public function mixWithRGB(Color $color, float $percentage = 0.5): Color {
         if ($percentage == 0) {
             return $this;
@@ -197,21 +184,6 @@ trait RGB {
             $this->RGB->G + ($percentage * ($color->RGB->G - $this->RGB->G)),
             $this->RGB->B + ($percentage * ($color->RGB->B - $this->RGB->B))
         );
-    }
-
-    public static function averageWithHSB(Color ...$colors): Color {
-        $aSum = 0;
-        $bSum = 0;
-        $cSum = 0;
-        $length = sizeof($colors);
-
-        foreach ($colors as $c) {
-            $aSum += $c->RGB->HSB->H;
-            $bSum += $c->RGB->HSB->S;
-            $cSum += $c->RGB->HSB->B;
-        }
-
-        return self::withHSB($aSum / $length, $bSum / $length, $cSum / $length);
     }
 
     public function mixWithHSB(Color $color, float $percentage = 0.5): Color {
@@ -255,5 +227,33 @@ trait RGB {
             $aS + ($percentage * ($bS - $aS)),
             $aB + ($percentage * ($bB - $aB))
         );
+    }
+
+
+    private static function _withRGB(float $r, float $g, float $b, ?string $name = null, ?string $profile = null, ?string $hex = null, ?ColorSpaceHSB $HSB = null): Color {
+        $profile = ColorSpaceRGB::validateProfile($profile);
+
+        $r = min(max($r, 0), 255);
+        $g = min(max($g, 0), 255);
+        $b = min(max($b, 0), 255);
+
+        $vector = @new Vector([
+            $profile::inverseCompanding($r / 255),
+            $profile::inverseCompanding($g / 255),
+            $profile::inverseCompanding($b / 255)
+        ]);
+
+        $xyz = ($profile::getXYZMatrix())->vectorMultiply($vector);
+        $xyz = new ColorSpaceXYZ($xyz[0], $xyz[1], $xyz[2]);
+
+        if ($profile::illuminant !== self::REFERENCE_WHITE) {
+            $xyz = $xyz->chromaticAdaptation(self::REFERENCE_WHITE, $profile::illuminant);
+        }
+
+        $color = new self($xyz->X, $xyz->Y, $xyz->Z, $name, [
+            'RGB' => new ColorSpaceRGB($r, $g, $b, $profile, $xyz, $hex, $HSB)
+        ]);
+
+        return $color;
     }
 }

@@ -3,23 +3,26 @@ declare(strict_types=1);
 namespace dW\Pigmentum\ColorSpace;
 use dW\Pigmentum\Color as Color;
 use dW\Pigmentum\Profile\RGB as Profile;
-use dW\Pigmentum\ColorSpace\RGB\HSB as HSB;
+use dW\Pigmentum\ColorSpace\{
+    RGB\HSB as ColorSpaceHSB,
+    XYZ as ColorSpaceXYZ
+};
 
-class RGB extends ColorSpace {
-    protected $_R;
-    protected $_G;
-    protected $_B;
-    protected $_profile;
+class RGB extends ColorSpace implements \Stringable {
+    protected float $_R;
+    protected float $_G;
+    protected float $_B;
+    protected string $_profile;
 
     // Child color spaces
-    protected $_Hex;
-    protected $_HSB;
+    protected ?string $_Hex = null;
+    protected ?ColorSpaceHSB $_HSB = null;
 
     // Reference to XYZ values used when converting color profiles
-    protected $xyz;
+    protected ColorSpaceXYZ $xyz;
 
 
-    public function __construct(float $R, float $G, float $B, ?string $profile = null, XYZ $xyz = null, ?string $hex = null, ?HSB $HSB = null) {
+    public function __construct(float $R, float $G, float $B, ?string $profile = null, ColorSpaceXYZ $xyz = null, ?string $hex = null, ?ColorSpaceHSB $HSB = null) {
         $profile = self::validateProfile($profile);
 
         $this->_R = $R;
@@ -37,7 +40,8 @@ class RGB extends ColorSpace {
         }
     }
 
-    public function convertToProfile(?string $profile = null): RGB {
+
+    public function convertToProfile(?string $profile = null): self {
         $profile = self::validateProfile($profile);
         // Nothing to do if the profile is the same.
         if ($profile === $this->profile) {
@@ -63,7 +67,7 @@ class RGB extends ColorSpace {
         return $this;
     }
 
-    public function convertToWorkingSpace(): RGB {
+    public function convertToWorkingSpace(): self {
         return $this->convertToProfile();
     }
 
@@ -72,7 +76,7 @@ class RGB extends ColorSpace {
         return $this->_Hex;
     }
 
-    public function toHSB(): HSB {
+    public function toHSB(): ColorSpaceHSB {
         $r = $this->R / 255;
         $g = $this->G / 255;
         $b = $this->B / 255;
@@ -108,7 +112,7 @@ class RGB extends ColorSpace {
             }
         }
 
-        $this->_HSB = new HSB($h * 360, $s * 100, $v * 100);
+        $this->_HSB = new ColorSpaceHSB($h * 360, $s * 100, $v * 100);
         return $this->_HSB;
     }
 
@@ -127,7 +131,8 @@ class RGB extends ColorSpace {
         return Color::$workingSpaceRGB;
     }
 
-    public function __toString() {
+
+    public function __toString(): string {
         return "rgb({$this->_R}, {$this->_G}, {$this->_B})";
     }
 }

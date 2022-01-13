@@ -2,10 +2,12 @@
 declare(strict_types=1);
 namespace dW\Pigmentum;
 use dW\Pigmentum\Profile as Profile;
+use dW\Pigmentum\ColorSpace\XYZ as ColorSpaceXYZ;
 
 class Color {
-    use RGB, Lab;
+    use Lab, RGB;
 
+    // Common illuminants used in color spaces
     const ILLUMINANT_D65 = [ 0.95047, 1, 1.08883 ];
     const ILLUMINANT_D50 = [ 0.96422, 1, 0.82521 ];
 
@@ -13,21 +15,24 @@ class Color {
     // separate constant in anticipation of perhaps allowing changing of this.
     const REFERENCE_WHITE = self::ILLUMINANT_D50;
 
+    // Math constants
     const KAPPA = 903.296296296296296;
     const EPSILON = 0.008856451679036;
 
     // RGB color profiles
-    const PROFILE_SRGB = '\dW\Pigmentum\Profile\RGB\sRGB';
-    const PROFILE_SIMPLE_SRGB = '\dW\Pigmentum\Profile\RGB\Simple_sRGB';
-    const PROFILE_ADOBERGB1998 = '\dW\Pigmentum\Profile\RGB\AdobeRGB1998';
-    const PROFILE_PROPHOTORGB = '\dW\Pigmentum\Profile\RGB\ProPhoto';
-    const PROFILE_DISPLAYP3 = '\dW\Pigmentum\Profile\RGB\DisplayP3';
+    const PROFILE_SRGB = __NAMESPACE__ . '\Profile\RGB\sRGB';
+    const PROFILE_SIMPLE_SRGB = __NAMESPACE__ . '\Profile\RGB\Simple_sRGB';
+    const PROFILE_ADOBERGB1998 = __NAMESPACE__ . '\Profile\RGB\AdobeRGB1998';
+    const PROFILE_PROPHOTORGB = __NAMESPACE__ . '\Profile\RGB\ProPhoto';
+    const PROFILE_DISPLAYP3 = __NAMESPACE__ . '\Profile\RGB\DisplayP3';
 
-    public $name;
+    /** A user supplied name for the color */
+    public ?string $name = null;
+    /** The current RGB working space */
+    public static string $workingSpaceRGB = self::PROFILE_SRGB;
 
-    public static $workingSpaceRGB = self::PROFILE_SRGB;
+    protected ColorSpaceXYZ $_XYZ;
 
-    protected $_XYZ;
 
     protected function __construct(float $X, float $Y, float $Z, ?string $name, array $props = []) {
         $this->_XYZ = new ColorSpace\XYZ($X, $Y, $Z);
@@ -42,12 +47,18 @@ class Color {
     }
 
 
-    static function withXYZ(float $X, float $Y, float $Z, string $name = null): Color {
+    public static function withXYZ(float $X, float $Y, float $Z, string $name = null): self {
         return new self(max(0, $X), max(0, $Y), max(0, $Z), $name);
     }
 
+
+    public static function toXYZ(): ColorSpaceXYZ {
+        return $this->_XYZ;
+    }
+
+
     // APCA contrast between $this (text color) and a supplied background color
-    public function apcaContrast(Color $backgroundColor): float {
+    public function apcaContrast(self $backgroundColor): float {
         // APCA's current algorithm only works on sRGB, and my attempts to get it to work
         // with other RGB color profiles have met with failure thus far. It uses a really
         // weird XYZ D65 color space to calculate contrast, so simply using a supplied
@@ -97,23 +108,7 @@ class Color {
         return $output * 100;
     }
 
-    // Calculates the WCAG2 contrast ratio between the color and a supplied one.
-    public function wcag2Contrast(Color $color): float {
-        $RGBa = $this->RGB;
-        $RGBb = $color->RGB;
-        $wsA = $RGBa->workingSpace;
-        $wsB = $RGBb->workingSpace;
-        $matrixA = $wsA::getXYZMatrix()[1];
-        $matrixB = $wsB::getXYZMatrix()[1];
-
-        $a = $matrixA[0] * $wsA::inverseCompanding($RGBa->R / 255) + $matrixA[1] * $wsA::inverseCompanding($RGBa->G / 255) + $matrixA[2] * $wsA::inverseCompanding($RGBa->B / 255);
-        $b = $matrixB[0] * $wsB::inverseCompanding($RGBb->R / 255) + $matrixB[1] * $wsB::inverseCompanding($RGBb->G / 255) + $matrixB[2] * $wsB::inverseCompanding($RGBb->B / 255);
-
-        $ratio = ($a + 0.05) / ($b + 0.05);
-        return ($a > $b) ? $ratio : 1 / $ratio;
-    }
-
-    public function deltaE(Color $color): float {
+    public function deltaE(self $color): float {
         $Lab1 = $this->Lab;
         $Lab2 = $color->Lab;
 
@@ -170,24 +165,48 @@ class Color {
         );
     }
 
-    public function distance(Color $color): float {
+    public function distance(self $color): float {
         return $this->deltaE($color);
     }
 
-    public function euclideanDistance(Color $color): float {
+    public function euclideanDistance(self $color): float {
         return sqrt(($color->Lab->L - $this->Lab->L) ** 2 + ($color->_Lab->a - $this->_Lab->a) ** 2 + ($color->_Lab->b - $this->_Lab->b) ** 2);
     }
 
+    // Calculates the WCAG2 contrast ratio between the color and a supplied one.
+    public function wcag2Contrast(self $color): float {
+        $RGBa = $this->RGB;
+        $RGBb = $color->RGB;
+        $wsA = $RGBa->workingSpace;
+        $wsB = $RGBb->workingSpace;
+        $matrixA = $wsA::getXYZMatrix()[1];
+        $matrixB = $wsB::getXYZMatrix()[1];
 
-    public function __get($property) {
-        $prop = "_$property";
-        if (property_exists($this, $prop)) {
-            if ($this->$prop === null) {
-                $method = "to$property";
-                $this->$prop = $this->$method();
-            }
+        $a = $matrixA[0] * $wsA::inverseCompanding($RGBa->R / 255) + $matrixA[1] * $wsA::inverseCompanding($RGBa->G / 255) + $matrixA[2] * $wsA::inverseCompanding($RGBa->B / 255);
+        $b = $matrixB[0] * $wsB::inverseCompanding($RGBb->R / 255) + $matrixB[1] * $wsB::inverseCompanding($RGBb->G / 255) + $matrixB[2] * $wsB::inverseCompanding($RGBb->B / 255);
 
-            return $this->$prop;
+        $ratio = ($a + 0.05) / ($b + 0.05);
+        return ($a > $b) ? $ratio : 1 / $ratio;
+    }
+
+
+    public function __get($name) {
+        $prop = "_$name";
+        if (!property_exists($this, $prop)) {
+            $trace = debug_backtrace();
+            set_error_handler(function($errno, $errstr) use($trace) {
+                echo "PHP Notice:  $errstr in {$trace[0]['file']} on line {$trace[0]['line']}" . PHP_EOL;
+            });
+            trigger_error("Cannot get undefined property $name", \E_USER_NOTICE);
+            restore_error_handler();
+            return null;
         }
+
+        if ($this->$prop === null) {
+            $method = "to$name";
+            $this->$prop = $this->$method();
+        }
+
+        return $this->$prop;
     }
 }

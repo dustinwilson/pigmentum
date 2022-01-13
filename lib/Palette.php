@@ -3,12 +3,14 @@ declare(strict_types=1);
 namespace dW\Pigmentum;
 
 class Palette {
-    protected $colors = [];
-    protected $_name = '';
+    public ?string $name;
+    protected array $colors = [];
 
-    public function __construct(string $name = '') {
-        $this->_name = $name;
+
+    public function __construct(?string $name = null) {
+        $this->name = $name;
     }
+
 
     public function addColor(Color ...$colors): bool {
         foreach ($colors as $c) {
@@ -167,7 +169,7 @@ class Palette {
         $colorSet = $dom->createElement('ColorSet');
         $colorSet->setAttribute('readonly', ($readonly) ? 'true' : 'false');
         $colorSet->setAttribute('version', '1.0');
-        $colorSet->setAttribute('name', $this->_name);
+        $colorSet->setAttribute('name', $this->name);
         $colorSet->setAttribute('columns', (string)$columnCount);
 
         $row = 0;
@@ -216,17 +218,5 @@ class Palette {
 
         $zip->close();
         return $tmpfile;
-    }
-
-    public function __get(string $prop) {
-        if ($prop === 'name') {
-            return $this->_name;
-        }
-    }
-
-    public function __set(string $prop, $value) {
-        if ($prop === 'name') {
-            $this->_name = $value;
-        }
     }
 }

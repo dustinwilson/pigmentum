@@ -2,10 +2,10 @@
 declare(strict_types=1);
 namespace dW\Pigmentum\ColorSpace\XYZ;
 
-class LMS extends \dW\Pigmentum\ColorSpace\ColorSpace {
-    protected $_rho;
-    protected $_gamma;
-    protected $_beta;
+class LMS extends \dW\Pigmentum\ColorSpace\ColorSpace implements \Stringable {
+    protected float $_rho;
+    protected float $_gamma;
+    protected float $_beta;
 
     public function __construct(float $rho, float $gamma, float $beta) {
         $this->_rho = $rho;

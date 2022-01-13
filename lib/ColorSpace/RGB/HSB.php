@@ -2,10 +2,11 @@
 declare(strict_types=1);
 namespace dW\Pigmentum\ColorSpace\RGB;
 
-class HSB extends \dW\Pigmentum\ColorSpace\ColorSpace {
-    protected $_H;
-    protected $_S;
-    protected $_B;
+class HSB extends \dW\Pigmentum\ColorSpace\ColorSpace implements \Stringable {
+    protected float $_H;
+    protected float $_S;
+    protected float $_B;
+
 
     public function __construct(float $H, float $S, float $B) {
         $this->_H = $H;
@@ -13,7 +14,8 @@ class HSB extends \dW\Pigmentum\ColorSpace\ColorSpace {
         $this->_B = $B;
     }
 
-    public function __toString() {
+
+    public function __toString(): string {
         return "hsb({$this->_H}, {$this->_S}, {$this->_B})";
     }
 }

@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": ">=7.4.0",
+        "php": "^8.0.2",
         "ext-dom": "*",
         "ext-zip": "*",
         "markrogoyski/math-php": ">=2.0.0",
@@ -18,10 +18,7 @@
     },
     "autoload": {
         "psr-4": {
-            "dW\\Pigmentum\\": [
-                "lib/",
-                "lib/Traits"
-            ]
+            "dW\\Pigmentum\\": [ "lib/" ]
         }
     }
 }

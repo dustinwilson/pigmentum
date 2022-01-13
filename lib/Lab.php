@@ -6,26 +6,8 @@ use dW\Pigmentum\ColorSpace\Lab as ColorSpaceLab;
 use dW\Pigmentum\ColorSpace\Lab\LCHab as ColorSpaceLCHab;
 
 trait Lab {
-    protected $_Lab;
+    protected ?ColorSpaceLab $_Lab = null;
 
-    private static function _withLab(float $L, float $a, float $b, ?string $name = null, ?ColorSpaceLCHab $LCHab = null): Color {
-        $L = min(max($L, 0), 100);
-        $a = min(max($a, -128), 127);
-        $b = min(max($b, -128), 127);
-
-        $fy = ($L + 16.0) / 116.0;
-        $fx = 0.002 * $a + $fy;
-        $fz = $fy - 0.005 * $b;
-
-        $fx3 = $fx ** 3;
-        $fz3 = $fz ** 3;
-
-        $xr = ($fx3 > self::EPSILON) ? $fx3 : (116.0 * $fx - 16.0) / self::KAPPA;
-        $yr = ($L > self::KAPPA * self::EPSILON) ? (($L + 16.0) / 116.0) ** 3 : $L / self::KAPPA;
-        $zr = ($fz3 > self::EPSILON) ? $fz3 : (116.0 * $fz - 16.0) / self::KAPPA;
-
-        return new self($xr * self::REFERENCE_WHITE[0], $yr * self::REFERENCE_WHITE[1], $zr * self::REFERENCE_WHITE[2], $name, [ 'Lab' => new ColorSpaceLab($L, $a, $b, $LCHab) ]);
-    }
 
     public static function withLab(float $L, float $a, float $b, ?string $name = null): Color {
         return self::_withLab($L, $a, $b, $name);
@@ -35,6 +17,7 @@ trait Lab {
         $hh = deg2rad($H);
         return self::_withLab($L, cos($hh) * $C, sin($hh) * $C, $name, new ColorSpaceLCHab($L, $C, $H));
     }
+
 
     public function toLab(): ColorSpaceLab {
         if ($this->_Lab !== null) {
@@ -62,6 +45,11 @@ trait Lab {
         return $this->_Lab;
     }
 
+
+    public static function average(Color ...$colors): Color {
+        return self::averageWithLab(...$colors);
+    }
+
     public static function averageWithLab(Color ...$colors): Color {
         $aSum = 0;
         $bSum = 0;
@@ -77,26 +65,6 @@ trait Lab {
         return self::withLab($aSum / $length, $bSum / $length, $cSum / $length);
     }
 
-    public function mixWithLab(Color $color, float $percentage = 0.5): Color {
-        if ($percentage == 0) {
-            return $this;
-        } elseif ($percentage == 1) {
-            return $color;
-        }
-
-        return self::withLab(
-            $this->Lab->L + ($percentage * ($color->Lab->L - $this->Lab->L)),
-            $this->Lab->a + ($percentage * ($color->Lab->a - $this->Lab->a)),
-            $this->Lab->b + ($percentage * ($color->Lab->b - $this->Lab->b))
-        );
-    }
-
-    // Mix with L*a*b* by default. Colors in this color space are perceptively
-    // uniform and are perfect for mixing.
-    public function mix(Color $color, float $percentage = 0.5): Color {
-        return self::mixWithLab($color, $percentage);
-    }
-
     public static function averageWithLCHab(Color ...$colors): Color {
         $aSum = 0;
         $bSum = 0;
@@ -110,6 +78,25 @@ trait Lab {
         }
 
         return self::withLCHab($aSum / $length, $bSum / $length, $cSum / $length);
+    }
+
+
+    public function mix(Color $color, float $percentage = 0.5): Color {
+        return self::mixWithLab($color, $percentage);
+    }
+
+    public function mixWithLab(Color $color, float $percentage = 0.5): Color {
+        if ($percentage == 0) {
+            return $this;
+        } elseif ($percentage == 1) {
+            return $color;
+        }
+
+        return self::withLab(
+            $this->Lab->L + ($percentage * ($color->Lab->L - $this->Lab->L)),
+            $this->Lab->a + ($percentage * ($color->Lab->a - $this->Lab->a)),
+            $this->Lab->b + ($percentage * ($color->Lab->b - $this->Lab->b))
+        );
     }
 
     public function mixWithLCHab(Color $color, float $percentage = 0.5): Color {
@@ -153,5 +140,25 @@ trait Lab {
             $aC + ($percentage * ($bC - $aC)),
             $H
         );
+    }
+
+
+    private static function _withLab(float $L, float $a, float $b, ?string $name = null, ?ColorSpaceLCHab $LCHab = null): Color {
+        $L = min(max($L, 0), 100);
+        $a = min(max($a, -128), 127);
+        $b = min(max($b, -128), 127);
+
+        $fy = ($L + 16.0) / 116.0;
+        $fx = 0.002 * $a + $fy;
+        $fz = $fy - 0.005 * $b;
+
+        $fx3 = $fx ** 3;
+        $fz3 = $fz ** 3;
+
+        $xr = ($fx3 > self::EPSILON) ? $fx3 : (116.0 * $fx - 16.0) / self::KAPPA;
+        $yr = ($L > self::KAPPA * self::EPSILON) ? (($L + 16.0) / 116.0) ** 3 : $L / self::KAPPA;
+        $zr = ($fz3 > self::EPSILON) ? $fz3 : (116.0 * $fz - 16.0) / self::KAPPA;
+
+        return new self($xr * self::REFERENCE_WHITE[0], $yr * self::REFERENCE_WHITE[1], $zr * self::REFERENCE_WHITE[2], $name, [ 'Lab' => new ColorSpaceLab($L, $a, $b, $LCHab) ]);
     }
 }

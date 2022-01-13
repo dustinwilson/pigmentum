@@ -1,15 +1,15 @@
 <?php
 declare(strict_types=1);
 namespace dW\Pigmentum\ColorSpace;
-use dW\Pigmentum\ColorSpace\Lab\LCHab as LCHab;
+use dW\Pigmentum\ColorSpace\Lab\LCHab as ColorSpaceLCHab;
 
-class Lab extends ColorSpace {
-    protected $_L;
-    protected $_a;
-    protected $_b;
+class Lab extends ColorSpace implements \Stringable {
+    protected float $_L;
+    protected float $_a;
+    protected float $_b;
 
     // Child color spaces
-    protected $_LCHab;
+    protected ?ColorSpaceLCHab $_LCHab = null;
 
 
     public function __construct(float $L, float $a, float $b, ?LCHab $LCHab = null) {
@@ -22,7 +22,8 @@ class Lab extends ColorSpace {
         }
     }
 
-    public function toLCHab(): LCHab {
+
+    public function toLCHab(): ColorSpaceLCHab {
         $c = sqrt($this->_a**2 + $this->_b**2);
 
         $h = rad2deg(atan2($this->_b, $this->_a));
@@ -30,11 +31,12 @@ class Lab extends ColorSpace {
             $h += 360;
         }
 
-        $this->_LCHab = new LCHab($this->_L, $c, $h);
+        $this->_LCHab = new ColorSpaceLCHab($this->_L, $c, $h);
         return $this->_LCHab;
     }
 
-    public function __toString() {
+
+    public function __toString(): string {
         return "lab({$this->_L}, {$this->_a}, {$this->_b})";
     }
 }
