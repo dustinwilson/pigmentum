@@ -77,6 +77,7 @@ class dW\Pigmentum\Color {
     public function mixWithRGB(dW\Pigmentum\Color $color, float $percentage = 0.5): dW\Pigmentum\Color;
     public function mixWithHSB(dW\Pigmentum\Color $color, float $percentage = 0.5): dW\Pigmentum\Color;
 
+
     public function apcaContrast(dW\Pigmentum\Color $backgroundColor): float;
     public function deltaE(dW\Pigmentum\Color $color): float;
     public function distance(dW\Pigmentum\Color $color): float;
@@ -807,4 +808,169 @@ Outputs:
 
 ```
 2.1117359393426
+```
+
+### dW\Pigmentum\ColorSpace\Lab ###
+
+```php
+class dW\Pigmentum\ColorSpace\Lab implements \Stringable {
+    public function toLCHab(): dW\Pigmentum\ColorSpace\Lab\LCHab;
+}
+```
+
+---
+
+#### dW\Pigmentum\ColorSpaceLab::toLCHab ####
+
+Returns the LCH (L\*a\*b\*) color space for the color.
+
+```php
+public function toLCHab(): dW\Pigmentum\ColorSpace\Lab\LCHab;
+```
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::withRGBHex('#ca6e48');
+echo $color->toLab()->toLCHab() . "\n";
+echo $color->Lab->LCHab;
+```
+
+Outputs:
+
+```
+lchab(56.794104953129, 51.406997165638, 47.294986435325)
+lchab(56.794104953129, 51.406997165638, 47.294986435325)
+```
+
+### dW\Pigmentum\ColorSpace\RGB ###
+
+```php
+class dW\Pigmentum\ColorSpace\RGB implements \Stringable {
+    public function convertToProfile(?string $profile = null): dW\Pigmentum\ColorSpace\RGB;
+    public function convertToWorkingSpace(?string $profile = null): dW\Pigmentum\ColorSpace\RGB;
+
+    public function toHex(): string;
+    public function toHSB(): dW\Pigmentum\ColorSpace\RGB\HSB;
+}
+```
+
+---
+
+#### dW\Pigmentum\ColorSpaceRGB::convertToProfile ####
+
+Returns a RGB color space using the supplied profile. Identical to `dW\Pigmentum\ColorSpaceLab::convertToWorkingSpace`.
+
+```php
+public function convertToProfile(
+    ?string $profile = null
+): dW\Pigmentum\ColorSpace\RGB;
+```
+
+* `profile`: A string representation of the class name of the color profile the channel values are in, defaults to the current working space
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+// sRGB is the default working space
+$color = Color::withRGBHex('#ca6e48');
+echo $color->RGB . "\n";
+echo $color->RGB->convertToProfile(Color::PROFILE_DISPLAYP3);
+```
+
+Outputs:
+
+```
+rgb(202, 110, 72)
+rgb(189.75848271875, 114.65981939776, 80.081758134176)
+```
+
+---
+
+#### dW\Pigmentum\ColorSpaceRGB::convertToWorkingSpace ####
+
+Returns a RGB color space using the supplied profile. Identical to `dW\Pigmentum\ColorSpaceLab::convertToProfile`.
+
+```php
+public function convertToWorkingSpace(
+    ?string $profile = null
+): dW\Pigmentum\ColorSpace\RGB;
+```
+
+* `profile`: A string representation of the class name of the color profile the channel values are in, defaults to the current working space
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+// sRGB is the default working space
+$color = Color::withRGBHex('#ca6e48');
+echo $color->RGB . "\n";
+echo $color->RGB->convertToWorkingSpace(Color::PROFILE_DISPLAYP3);
+```
+
+Outputs:
+
+```
+rgb(202, 110, 72)
+rgb(189.75848271875, 114.65981939776, 80.081758134176)
+```
+
+---
+
+#### dW\Pigmentum\ColorSpaceRGB::toHex ####
+
+Returns a RGB hex string for the color.
+
+```php
+public function toRGBHex(): string;
+```
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::withRGBHex('#ca6e48');
+echo $color->toRGB()->toHex() . "\n";
+echo $color->RGB->Hex;
+```
+
+Outputs:
+
+```
+lchab(56.794104953129, 51.406997165638, 47.294986435325)
+lchab(56.794104953129, 51.406997165638, 47.294986435325)
+```
+
+---
+
+#### dW\Pigmentum\ColorSpaceRGB::toHSB ####
+
+Returns the HSB color space for the color.
+
+```php
+public function toHSB(): dW\Pigmentum\ColorSpace\RGB\HSB;
+```
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::withRGBHex('#ca6e48');
+echo $color->toRGB()->toHSB() . "\n";
+echo $color->RGB->HSB;
+```
+
+Outputs:
+
+```
+hsb(17.538461538462, 64.356435643564, 79.21568627451)
+hsb(17.538461538462, 64.356435643564, 79.21568627451)
 ```
