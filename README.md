@@ -7,6 +7,7 @@ Pigmentum
 [d]: https://en.wikipedia.org/wiki/HSL_and_HSV
 [e]: https://en.wikipedia.org/wiki/LMS_color_space
 [f]: https://en.wikipedia.org/wiki/RGB_color_space
+[g]: https://github.com/Myndex/apca-w3
 
 Library for manipulating color in PHP. This is the result of my own experiments with color math. There are other color classes out there, but they either work not how I'd like or the math is incorrect.
 
@@ -89,6 +90,8 @@ class dW\Pigmentum\Color {
 * *name* (?string): A user-supplied name for the color. Useful when making palettes.
 * *workingSpaceRGB* (string): The current RGB working space.
 
+---
+
 #### dW\Pigmentum\Color::withLab ####
 
 Creates a new `dW\Pigmentum\Color` object from L\*a\*b* values.
@@ -115,6 +118,8 @@ namespace dW\Pigmentum\Color;
 Color::withLab(57, 35, 38);
 ```
 
+---
+
 #### dW\Pigmentum\Color::withLCHab ####
 
 Creates a new `dW\Pigmentum\Color` object from L\*C\*H\* (L\*a\*b\*) values.
@@ -140,6 +145,8 @@ namespace dW\Pigmentum\Color;
 
 Color::withLCHab(57, 51, 47);
 ```
+
+---
 
 #### dW\Pigmentum\Color::withRGB ####
 
@@ -179,6 +186,8 @@ xyz(0.32686782145478, 0.24712385141221, 0.069650535956488)
 xyz(0.40672668489701, 0.28866272343639, 0.067355999640287)
 ```
 
+---
+
 #### dW\Pigmentum\Color::withRGBHex ####
 
 Creates a new `dW\Pigmentum\Color` object from an RGB hex string.
@@ -213,6 +222,8 @@ xyz(0.32686782145478, 0.24712385141221, 0.069650535956488)
 xyz(0.40672668489701, 0.28866272343639, 0.067355999640287)
 ```
 
+---
+
 #### dW\Pigmentum\Color::withHSB ####
 
 Creates a new `dW\Pigmentum\Color` object from RGB values.
@@ -241,6 +252,8 @@ namespace dW\Pigmentum\Color;
 Color::withHSB(18, 64, 79);
 ```
 
+---
+
 #### dW\Pigmentum\Color::withXYZ ####
 
 Creates a new `dW\Pigmentum\Color` object from XYZ values.
@@ -267,6 +280,8 @@ namespace dW\Pigmentum\Color;
 Color::withXYZ(0.3267, 0.2471, 0.0696);
 ```
 
+---
+
 #### dW\Pigmentum\Color::toLab ####
 
 Returns the L\*a\*b\* color space for the color.
@@ -291,6 +306,8 @@ Outputs:
 lab(56.977258534337, 34.064915293425, 37.682616197795)
 lab(56.977258534337, 34.064915293425, 37.682616197795)
 ```
+
+---
 
 #### dW\Pigmentum\Color::toRGB ####
 
@@ -321,6 +338,8 @@ rgb(201.92948812963, 110.03872289405, 71.957047956757)
 rgb(201.92948812963, 110.03872289405, 71.957047956757)
 ```
 
+---
+
 #### dW\Pigmentum\Color::toXYZ ####
 
 Returns the XYZ color space for the color.
@@ -346,6 +365,7 @@ xyz(0.32686782145478, 0.24712385141221, 0.069650535956488)
 xyz(0.32686782145478, 0.24712385141221, 0.069650535956488)
 ```
 
+---
 
 #### dW\Pigmentum\Color::average ####
 
@@ -374,6 +394,8 @@ Outputs:
 #b49393
 ```
 
+---
+
 #### dW\Pigmentum\Color::averageWithLab ####
 
 Averages the provided colors in the L\*a\*b\* color space and returns a new Color object. Identical to `dW\Pigmentum\Color::average`.
@@ -400,6 +422,8 @@ Outputs:
 ```
 #b49393
 ```
+
+---
 
 #### dW\Pigmentum\Color::averageWithLCHab ####
 
@@ -428,6 +452,8 @@ Outputs:
 #9a9f71
 ```
 
+---
+
 #### dW\Pigmentum\Color::averageWithRGB ####
 
 Averages the provided colors in the RGB color space and returns a new Color object.
@@ -455,6 +481,8 @@ Outputs:
 #b09595
 ```
 
+---
+
 #### dW\Pigmentum\Color::averageWithHSB ####
 
 Averages the provided colors in the HSB color space and returns a new Color object.
@@ -480,4 +508,303 @@ Outputs:
 
 ```
 #a9c07c
+```
+
+---
+
+#### dW\Pigmentum\Color::mix ####
+
+Mixes the color with a provided color in the L\*a\*b\* color space and returns a new Color object. Identical to `dW\Pigmentum\Color::mixWithLab`.
+
+```php
+public function mix(
+    dW\Pigmentum\Color $color,
+    float $percentage = 0.5
+): dW\Pigmentum\Color;
+```
+
+* `color`: Color to mix with `$this`.
+* `percentage`: How strong to mix the color with `$this`.
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::withRGBHex('#ca6e48')->mix(Color::withXYZ(0.0864, 0.0868, 0.1409), 0.625);
+echo $color->RGB->Hex;
+```
+
+Outputs:
+
+```
+#7e5e67
+```
+
+---
+
+#### dW\Pigmentum\Color::mixWithLab ####
+
+Mixes the color with a provided color in the L\*a\*b\* color space and returns a new Color object. Identical to `dW\Pigmentum\Color::mix`.
+
+```php
+public function mixWithLab(
+    dW\Pigmentum\Color $color,
+    float $percentage = 0.5
+): dW\Pigmentum\Color;
+```
+
+* `color`: Color to mix with `$this`.
+* `percentage`: How strong to mix the color with `$this`.
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::withRGBHex('#ca6e48')->mixWithLab(Color::withXYZ(0.0864, 0.0868, 0.1409), 0.625);
+echo $color->RGB->Hex;
+```
+
+Outputs:
+
+```
+#7e5e67
+```
+
+---
+
+#### dW\Pigmentum\Color::mixWithLCHab ####
+
+Mixes the color with a provided color in the LCH (L\*a\*b\*) color space and returns a new Color object.
+
+```php
+public function mixWithLab(
+    dW\Pigmentum\Color $color,
+    float $percentage = 0.5
+): dW\Pigmentum\Color;
+```
+
+* `color`: Color to mix with `$this`.
+* `percentage`: How strong to mix the color with `$this`.
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::withRGBHex('#ca6e48')->mixWithLCHab(Color::withXYZ(0.0864, 0.0868, 0.1409), 0.625);
+echo $color->RGB->Hex;
+```
+
+Outputs:
+
+```
+#875587
+```
+
+---
+
+#### dW\Pigmentum\Color::mixWithRGB ####
+
+Mixes the color with a provided color in the RGB color space and returns a new Color object.
+
+```php
+public function mixWithRGB(
+    dW\Pigmentum\Color $color,
+    float $percentage = 0.5
+): dW\Pigmentum\Color;
+```
+
+* `color`: Color to mix with `$this`.
+* `percentage`: How strong to mix the color with `$this`.
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::withRGBHex('#ca6e48')->mixWithRGB(Color::withXYZ(0.0864, 0.0868, 0.1409), 0.625);
+echo $color->RGB->Hex;
+```
+
+Outputs:
+
+```
+#785d65
+```
+
+---
+
+#### dW\Pigmentum\Color::mixWithHSB ####
+
+Mixes the color with a provided color in the HSB color space and returns a new Color object.
+
+```php
+public function mixWithHSB(
+    dW\Pigmentum\Color $color,
+    float $percentage = 0.5
+): dW\Pigmentum\Color;
+```
+
+* `color`: Color to mix with `$this`.
+* `percentage`: How strong to mix the color with `$this`.
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+$color = Color::withRGBHex('#ca6e48')->mixWithHSB(Color::withXYZ(0.0864, 0.0868, 0.1409), 0.625);
+echo $color->RGB->Hex;
+```
+
+Outputs:
+
+```
+#7f4b96
+```
+
+---
+
+#### dW\Pigmentum\Color::apcaContrast ####
+
+Calculate the [APCA][g] (indented for use with the future WCAG 3) contrast between a text color (`$this`) and a provided background color.
+
+**NOTE**: This algorithm is in flux, and its results may change over time as the upstream reference algorithm is updated.
+
+```php
+public function apcaContrast(
+    dW\Pigmentum\Color $backgroundColor
+): dW\Pigmentum\Color;
+```
+
+* `backgroundColor`: Color to calculate contrast against.
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+echo Color::withRGBHex('#ca6e48')->apcaContrast(Color::withXYZ(0.0864, 0.0868, 0.1409));
+```
+
+Outputs:
+
+```
+-21.758825698145
+```
+
+---
+
+#### dW\Pigmentum\Color::deltaE ####
+
+Calculate the CIE2000 distance between `$this` and a supplied color. Identical to `dW\Pigmentum\Color::distance`.
+
+```php
+public function deltaE(
+    dW\Pigmentum\Color $color
+): dW\Pigmentum\Color;
+```
+
+* `color`: Color to calculate distance from.
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+echo Color::withRGBHex('#ca6e48')->deltaE(Color::withXYZ(0.0864, 0.0868, 0.1409));
+```
+
+Outputs:
+
+```
+41.674529389586
+```
+
+---
+
+#### dW\Pigmentum\Color::distance ####
+
+Calculate the CIE2000 distance between `$this` and a supplied color. The CIE2000 distance formula takes perception into account when calculating. Identical to `dW\Pigmentum\Color::deltaE`.
+
+```php
+public function distance(
+    dW\Pigmentum\Color $color
+): dW\Pigmentum\Color;
+```
+
+* `color`: Color to calculate distance from.
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+echo Color::withRGBHex('#ca6e48')->distance(Color::withXYZ(0.0864, 0.0868, 0.1409));
+```
+
+Outputs:
+
+```
+41.674529389586
+```
+
+---
+
+#### dW\Pigmentum\Color::euclideanDistance ####
+
+Calculate the geometric euclidean distance between `$this` and a supplied color. This does not take perception into account when calculating. See `dW\Pigmentum\Color::deltaE` for perceptual distance.
+
+```php
+public function euclideanDistance(
+    dW\Pigmentum\Color $color
+): dW\Pigmentum\Color;
+```
+
+* `color`: Color to calculate distance from.
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+echo Color::withRGBHex('#ca6e48')->euclideanDistance(Color::withXYZ(0.0864, 0.0868, 0.1409));
+```
+
+Outputs:
+
+```
+71.675682240739
+```
+
+---
+
+#### dW\Pigmentum\Color::wcag2Contrast ####
+
+Calculate the WCAG2 contrast between `$this` and a provided color.
+
+**NOTE**: While this is currently the standard for the Web it is not terribly accurate nor correct in its assessment. Use only if you're legally bound to do so. Even though the [APCA][g] contrast algorithm is in flux it already is much more accurate than the WCAG2 contrast ratio.
+
+```php
+public function wcag2Contrast(
+    dW\Pigmentum\Color $color
+): dW\Pigmentum\Color;
+```
+
+* `color`: Color to calculate contrast against.
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+echo Color::withRGBHex('#ca6e48')->wcag2Contrast(Color::withXYZ(0.0864, 0.0868, 0.1409));
+```
+
+Outputs:
+
+```
+2.1117359393426
 ```

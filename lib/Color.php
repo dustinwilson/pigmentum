@@ -177,8 +177,8 @@ class Color {
     public function wcag2Contrast(self $color): float {
         $RGBa = $this->RGB;
         $RGBb = $color->RGB;
-        $wsA = $RGBa->workingSpace;
-        $wsB = $RGBb->workingSpace;
+        $wsA = $RGBa->profile;
+        $wsB = $RGBb->profile;
         $matrixA = $wsA::getXYZMatrix()[1];
         $matrixB = $wsB::getXYZMatrix()[1];
 
