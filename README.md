@@ -86,8 +86,8 @@ class dW\Pigmentum\Color {
 
 #### Properties ####
 
-*name* (?string): A user-supplied name for the color. Useful when making palettes.
-*workingSpaceRGB* (string): The current RGB working space.
+* *name* (?string): A user-supplied name for the color. Useful when making palettes.
+* *workingSpaceRGB* (string): The current RGB working space.
 
 #### dW\Pigmentum\Color::withLab ####
 
@@ -107,6 +107,14 @@ public static function withLab(
 * `b`: The b channel value
 * `name`: An optional name to associate with the color
 
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+Color::withRGB(57, 35, 38);
+```
+
 #### dW\Pigmentum\Color::withLCHab ####
 
 Creates a new `dW\Pigmentum\Color` object from L\*C\*H\* (L\*a\*b\*) values.
@@ -124,6 +132,14 @@ public static function withLCHab(
 * `C`: The chroma channel value
 * `H`: The hue channel value
 * `name`: An optional name to associate with the color
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+Color::withLCHab(57, 51, 47);
+```
 
 #### dW\Pigmentum\Color::withRGB ####
 
@@ -145,12 +161,20 @@ public static function withRGB(
 * `name`: An optional name to associate with the color
 * `profile`: A string representation of the class name of the color profile the channel values are in, defaults to the current working space
 
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+Color::withRGB(202, 110, 72);
+```
+
 #### dW\Pigmentum\Color::withRGBHex ####
 
 Creates a new `dW\Pigmentum\Color` object from an RGB hex string.
 
 ```php
-public static function withRGB(
+public static function withRGBHex(
     string $hex,
     ?string $name = null,
     ?string $profile = null
@@ -160,6 +184,14 @@ public static function withRGB(
 * `hex`: An RGB hex string; can be preceded by a '#' or without
 * `name`: An optional name to associate with the color
 * `profile`: A string representation of the class name of the color profile the channel values are in, defaults to the current working space
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+Color::withRGBHex('#ca6e48');
+```
 
 #### dW\Pigmentum\Color::withHSB ####
 
@@ -181,6 +213,14 @@ public static function withHSB(
 * `name`: An optional name to associate with the color
 * `profile`: A string representation of the class name of the color profile the channel values are in, defaults to the current working space
 
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+Color::withHSB(18, 64, 79);
+```
+
 #### dW\Pigmentum\Color::withXYZ ####
 
 Creates a new `dW\Pigmentum\Color` object from XYZ values.
@@ -198,6 +238,14 @@ public static function withXYZ(
 * `Y`: The Y channel value
 * `Z`: The Z channel value
 * `name`: An optional name to associate with the color
+
+##### Example #####
+
+```php
+namespace dW\Pigmentum\Color;
+
+Color::withXYZ(0.3267, 0.2471, 0.0696);
+```
 
 #### dW\Pigmentum\Color::toLab ####
 
