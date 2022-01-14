@@ -12,7 +12,11 @@ class RGB extends ColorSpace implements \Stringable {
     protected float $_R;
     protected float $_G;
     protected float $_B;
+    protected float $_unclampedR;
+    protected float $_unclampedG;
+    protected float $_unclampedB;
     protected string $_profile;
+    protected bool $_outOfGamut = false;
 
     // Child color spaces
     protected ?string $_Hex = null;
@@ -22,13 +26,17 @@ class RGB extends ColorSpace implements \Stringable {
     protected ColorSpaceXYZ $xyz;
 
 
-    public function __construct(float $R, float $G, float $B, ?string $profile = null, ColorSpaceXYZ $xyz = null, ?string $hex = null, ?ColorSpaceHSB $HSB = null) {
+    public function __construct(float $R, float $G, float $B, float $unclampedR, float $unclampedG, float $unclampedB, ?string $profile = null, ColorSpaceXYZ $xyz = null, ?string $hex = null, ?ColorSpaceHSB $HSB = null, bool $outOfGamut = false) {
         $profile = self::validateProfile($profile);
 
         $this->_R = $R;
         $this->_G = $G;
         $this->_B = $B;
+        $this->_unclampedR = $unclampedR;
+        $this->_unclampedG = $unclampedG;
+        $this->_unclampedB = $unclampedB;
         $this->_profile = ($profile !== null) ? $profile : Color::$workingSpaceRGB;
+        $this->_outOfGamut = $outOfGamut;
         $this->xyz = clone $xyz;
 
         if ($hex !== null) {
@@ -41,7 +49,7 @@ class RGB extends ColorSpace implements \Stringable {
     }
 
 
-    public function convertToProfile(?string $profile = null): self {
+    public function changeProfile(?string $profile = null): self {
         $profile = self::validateProfile($profile);
         // Nothing to do if the profile is the same.
         if ($profile === $this->profile) {
@@ -54,7 +62,11 @@ class RGB extends ColorSpace implements \Stringable {
         $this->_R = $rgb->R;
         $this->_G = $rgb->G;
         $this->_B = $rgb->B;
+        $this->_unclampedR = $rgb->unclampedR;
+        $this->_unclampedG = $rgb->unclampedG;
+        $this->_unclampedB = $rgb->unclampedB;
         $this->_profile = $profile;
+        $this->_outOfGamut = $rgb->outOfGamut;
 
         if ($this->_Hex !== null) {
             $this->toHex();
@@ -65,10 +77,6 @@ class RGB extends ColorSpace implements \Stringable {
         }
 
         return $this;
-    }
-
-    public function convertToWorkingSpace(): self {
-        return $this->convertToProfile();
     }
 
     public function toHex(): string {

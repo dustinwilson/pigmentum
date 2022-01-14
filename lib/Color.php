@@ -59,22 +59,16 @@ class Color {
 
     // APCA contrast between $this (text color) and a supplied background color
     public function apcaContrast(self $backgroundColor): float {
-        // APCA's current algorithm only works on sRGB, and my attempts to get it to work
-        // with other RGB color profiles have met with failure thus far. It uses a really
-        // weird XYZ D65 color space to calculate contrast, so simply using a supplied
-        // color's XYZ values doesn't work.
+        // APCA's current algorithm mostly uses sRGB, but there is support internally
+        // for Adobe RGB and Display P3 as well. However, the algorithm produces
+        // different contrast results when colors converted between profiles are
+        // compared when mathematically that should not be the case.
 
-        // Converting to sRGB isn't ideal because colors can exist outside its gamut. No
-        // idea how to circumvent this.
-        $txt = $this->toRGB();
-        $bg = $backgroundColor->toRGB();
-
-        $profile = $txt->profile;
-        $matrix = $profile::getXYZMatrix()[1];
-        $gamma = 2.4;
-
-        $txtY = $matrix[0] * (($txt->R / 255) ** $gamma) + $matrix[1] * (($txt->G / 255) ** $gamma) + $matrix[2] * (($txt->B / 255) ** $gamma);
-        $bgY = $matrix[0] * (($bg->R / 255) ** $gamma) + $matrix[1] * (($bg->G / 255) ** $gamma) + $matrix[2] * (($bg->B / 255) ** $gamma);
+        // I am going to bypass all of this by just converting the already existing XYZ
+        // values from D50 to D65 which is what this algorithm uses because most display
+        // profiles are D65.
+        $txtY = $this->_XYZ->chromaticAdaptation(self::ILLUMINANT_D65, self::ILLUMINANT_D50)->Y;
+        $bgY = $backgroundColor->XYZ->chromaticAdaptation(self::ILLUMINANT_D65, self::ILLUMINANT_D50)->Y;
 
         $txtY = ($txtY > 0.022) ? $txtY : $txtY + ((0.022 - $txtY) ** 1.414);
         $bgY = ($bgY > 0.022) ? $bgY : $bgY + ((0.022 - $bgY) ** 1.414);
@@ -85,24 +79,14 @@ class Color {
         // For normal polarity, black text on white
         if ($bgY > $txtY) {
             $SAPC = ($bgY ** 0.56 - $txtY ** 0.57) * 1.14;
-            if ($SAPC < 0.001) {
-                $output = 0;
-            } elseif ($SAPC < 0.035991) {
-                $output = $SAPC - $SAPC * 27.7847239587675 * 0.027;
-            } else {
-                $output = $SAPC - 0.027;
-            }
+            // Low Contrast smooth rollout to prevent polarity reversal and also a low-clip
+            // for very low contrasts
+            $output = ($SAPC < 0.1) ? 0 : $SAPC - 0.027;
         }
         // For inverse polarity, white text on black
         else {
             $SAPC = ($bgY ** 0.65 - $txtY ** 0.62) * 1.14;
-            if ($SAPC > -0.001) {
-                $output = 0;
-            } elseif ($SAPC > -0.035991) {
-                $output = $SAPC - $SAPC * 27.7847239587675 * 0.027;
-            } else {
-                $output = $SAPC + 0.027;
-            }
+            $output = ($SAPC > -0.1) ? 0 : $SAPC + 0.027;
         }
 
         return $output * 100;

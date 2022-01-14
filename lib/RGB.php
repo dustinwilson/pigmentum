@@ -146,6 +146,9 @@ trait RGB {
                 255,
                 255,
                 255,
+                255,
+                255,
+                255,
                 $profile,
                 $this->_XYZ
             );
@@ -159,12 +162,38 @@ trait RGB {
             $matrix = $profile::getXYZMatrix()->inverse();
             $uncompandedVector = $matrix->vectorMultiply(@new Vector([ $xyz->X, $xyz->Y, $xyz->Z ]));
 
+            $RGB = [
+                $profile::companding($uncompandedVector[0]),
+                $profile::companding($uncompandedVector[1]),
+                $profile::companding($uncompandedVector[2])
+            ];
+
+            $outOfGamut = false;
+            foreach ($RGB as $key => $channel) {
+                // Sometimes due to inaccuracies inherent in binary to decimal math conversion
+                // values which are actually 0 can be represented by impossibly small floating
+                // point decimals. Treat them as 0.
+                if (round($channel, 5) == 0) {
+                    $RGB[$key] = 0;
+                }
+
+                if ($channel < 0 || $channel > 1) {
+                    $outOfGamut = true;
+                }
+            }
+
             $this->_RGB = new ColorSpaceRGB(
-                min(max($profile::companding($uncompandedVector[0]) * 255, 0), 255),
-                min(max($profile::companding($uncompandedVector[1]) * 255, 0), 255),
-                min(max($profile::companding($uncompandedVector[2]) * 255, 0), 255),
+                min(max($RGB[0] * 255, 0), 255),
+                min(max($RGB[1] * 255, 0), 255),
+                min(max($RGB[2] * 255, 0), 255),
+                $RGB[0] * 255,
+                $RGB[1] * 255,
+                $RGB[2] * 255,
                 $profile,
-                $this->_XYZ
+                $this->_XYZ,
+                null,
+                null,
+                $outOfGamut
             );
         }
 
@@ -251,7 +280,7 @@ trait RGB {
         }
 
         $color = new self($xyz->X, $xyz->Y, $xyz->Z, $name, [
-            'RGB' => new ColorSpaceRGB($r, $g, $b, $profile, $xyz, $hex, $HSB)
+            'RGB' => new ColorSpaceRGB($r, $g, $b, $r, $g, $b, $profile, $xyz, $hex, $HSB)
         ]);
 
         return $color;

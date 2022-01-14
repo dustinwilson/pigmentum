@@ -863,9 +863,14 @@ class dW\Pigmentum\ColorSpace\RGB implements \Stringable {
     public readonly float $R;
     public readonly float $G;
     public readonly float $B;
+    public readonly float $unclampedR;
+    public readonly float $unclampedG;
+    public readonly float $unclampedB;
+    public readonly string $profile;
+    public readonly bool $outOfGamut;
 
 
-    public function convertToProfile(?string $profile = null): dW\Pigmentum\ColorSpace\RGB;
+    public function changeProfile(?string $profile = null): dW\Pigmentum\ColorSpace\RGB;
     public function convertToWorkingSpace(?string $profile = null): dW\Pigmentum\ColorSpace\RGB;
 
     public function toHex(): string;
@@ -875,18 +880,23 @@ class dW\Pigmentum\ColorSpace\RGB implements \Stringable {
 
 #### Properties ####
 
-* *R* (float): The R channel for the color space.
-* *G* (float): The G channel for the color space.
-* *B* (float): The B channel for the color space.
+* *R* (float): The R channel for the color space
+* *G* (float): The G channel for the color space
+* *B* (float): The B channel for the color space
+* *unclampedR* (float): If the color is out of the profile's gamut this will represent the unclamped R channel for the color space, otherwise same as R
+* *unclampedG* (float): If the color is out of the profile's gamut this will represent the unclamped G channel for the color space, otherwise same as G
+* *unclampedB* (float): If the color is out of the profile's gamut this will represent the unclamped B channel for the color space, otherwise same as B
+* *profile* (string): A string representation of the class name of the color profile the channel values are in
+* *outOfGamut* (bool): True if the color is out of the profile's gamut, false if not
 
 ---
 
-#### dW\Pigmentum\ColorSpace\RGB::convertToProfile ####
+#### dW\Pigmentum\ColorSpace\RGB::changeProfile ####
 
-Returns a RGB color space using the supplied profile. Identical to `dW\Pigmentum\ColorSpaceLab::convertToWorkingSpace`.
+Converts the color's profile and returns a RGB color space using the supplied profile.
 
 ```php
-public function convertToProfile(
+public function changeProfile(
     ?string $profile = null
 ): dW\Pigmentum\ColorSpace\RGB;
 ```
@@ -901,39 +911,7 @@ namespace dW\Pigmentum\Color;
 // sRGB is the default working space
 $color = Color::withRGBHex('#ca6e48');
 echo $color->RGB . "\n";
-echo $color->RGB->convertToProfile(Color::PROFILE_DISPLAYP3);
-```
-
-Outputs:
-
-```
-rgb(202, 110, 72)
-rgb(189.75848271875, 114.65981939776, 80.081758134176)
-```
-
----
-
-#### dW\Pigmentum\ColorSpace\RGB::convertToWorkingSpace ####
-
-Returns a RGB color space using the supplied profile. Identical to `dW\Pigmentum\ColorSpaceLab::convertToProfile`.
-
-```php
-public function convertToWorkingSpace(
-    ?string $profile = null
-): dW\Pigmentum\ColorSpace\RGB;
-```
-
-* `profile`: A string representation of the class name of the color profile the channel values are in, defaults to the current working space
-
-##### Example #####
-
-```php
-namespace dW\Pigmentum\Color;
-
-// sRGB is the default working space
-$color = Color::withRGBHex('#ca6e48');
-echo $color->RGB . "\n";
-echo $color->RGB->convertToWorkingSpace(Color::PROFILE_DISPLAYP3);
+echo $color->RGB->changeProfile(Color::PROFILE_DISPLAYP3);
 ```
 
 Outputs:
