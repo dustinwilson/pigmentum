@@ -62,13 +62,22 @@ class Color {
         // APCA's current algorithm mostly uses sRGB, but there is support internally
         // for Adobe RGB and Display P3 as well. However, the algorithm produces
         // different contrast results when colors converted between profiles are
-        // compared when mathematically that should not be the case.
+        // compared when mathematically that should not be the case. Going to just
+        // convert to sRGB and keep unclamped values.
 
-        // I am going to bypass all of this by just converting the already existing XYZ
-        // values from D50 to D65 which is what this algorithm uses because most display
-        // profiles are D65.
-        $txtY = $this->_XYZ->chromaticAdaptation(self::ILLUMINANT_D65, self::ILLUMINANT_D50)->Y;
-        $bgY = $backgroundColor->XYZ->chromaticAdaptation(self::ILLUMINANT_D65, self::ILLUMINANT_D50)->Y;
+        // APCA's algorithm uses a weird XYZ D65 color space. I could use chromatic
+        // adaptation to convert from D50 to D65 normally, but the APCA algorithm
+        // requires multiplying each channel by an odd gamma value when inverse
+        // companding. It's 2.4 rather than 2.2 for sRGB and Display P3, but 2.35 for
+        // Adobe RGB for some weird reason.
+
+        $sRGBYVector = self::PROFILE_SRGB::getXYZMatrix()[1];
+        $gamma = 2.4;
+
+        $txt = $this->toRGB(self::PROFILE_SRGB);
+        $bg = $backgroundColor->toRGB(self::PROFILE_SRGB);
+        $txtY = $sRGBYVector[0] * (($txt->unclampedR / 255) ** $gamma) + $sRGBYVector[1] * (($txt->unclampedG / 255) ** $gamma) + $sRGBYVector[2] * (($txt->unclampedB / 255) ** $gamma);
+        $bgY = $sRGBYVector[0] * (($bg->unclampedR / 255) ** $gamma) + $sRGBYVector[1] * (($bg->unclampedG / 255) ** $gamma) + $sRGBYVector[2] * (($bg->unclampedB / 255) ** $gamma);
 
         $txtY = ($txtY > 0.022) ? $txtY : $txtY + ((0.022 - $txtY) ** 1.414);
         $bgY = ($bgY > 0.022) ? $bgY : $bgY + ((0.022 - $bgY) ** 1.414);
