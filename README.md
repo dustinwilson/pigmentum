@@ -8,12 +8,23 @@ Pigmentum
 [e]: https://en.wikipedia.org/wiki/LMS_color_space
 [f]: https://en.wikipedia.org/wiki/RGB_color_space
 [g]: https://github.com/Myndex/apca-w3
+[h]: https://www.php.net/manual/en/book.dom.php
+[i]: https://www.php.net/manual/en/book.mbstring.php
+[j]: https://www.php.net/manual/en/book.zip.php
 
 Library for manipulating color in PHP. This is the result of my own experiments with color math. There are other color classes out there, but they either work not how I'd like or the math is incorrect.
 
 ## Warning Before Using ##
 
 This library is experimental. The code does not have any unit tests yet, but that work is planned. Until unit tests exist, treat this software as beta or even alpha software. Also, the public API is in flux, so if you do use this library you're forewarned of possible breaking API changes.
+
+## Requirements ##
+
+* PHP 8.0.2 or newer with the following extensions:
+  - [dom][h] extension (for palettes)
+  - [mbstring][i] extension (for palettes)
+  - [zip][j] extension (for palettes)
+* Composer 2.0 or newer
 
 ## Documentation ##
 
@@ -1108,6 +1119,9 @@ abstract class dW\Pigmentum\Profile\RGB {
     const gamma = 2.2;
     const name = '';
 
+    protected static array $xyzMatrix;
+    protected static array $xyzMatrixInverse;
+
 
     public static function companding(float $channel): float;
     public static function inverseCompanding(float $channel): float;
@@ -1126,6 +1140,18 @@ class dW\Pigmentum\Profile\AdobeRGB1998 extends dW\Pigmentum\Profile\RGB {
         [ 0.2100, 0.7100 ],
         [ 0.1500, 0.0600 ]
     ];
+
+    protected static array $xyzMatrix = [
+        [ 0.5767308871981477, 0.18555395071121408, 0.18818516209063843 ],
+        [ 0.29737686371154487, 0.6273490714522, 0.07527406483625537 ],
+        [ 0.027034260337413143, 0.0706872193185578, 0.9911085203440292 ]
+    ];
+
+    protected static array $xyzMatrixInverse = [
+        [ 2.04136897926008, -0.5649463871751956, -0.34469438437784833 ],
+        [ -0.9692660305051868, 1.8760108454466942, 0.041556017530349834 ],
+        [ 0.013447387216170259, -0.11838974235412557, 1.0154095719504166 ]
+    ];
 }
 ```
 
@@ -1139,6 +1165,18 @@ class dW\Pigmentum\Profile\AdobeRGB1998 extends dW\Pigmentum\Profile\RGB {
         [ 0.680, 0.320 ],
         [ 0.265, 0.690 ],
         [ 0.150, 0.060 ]
+    ];
+
+    protected static array $xyzMatrix = [
+        [ 0.48663265, 0.2656631625, 0.1981741875 ],
+        [ 0.2290036, 0.6917267249999999, 0.079269675 ],
+        [ -3.972579210032023E-17, 0.04511261250000004, 1.0437173875 ]
+    ];
+
+    protected static array $xyzMatrixInverse = [
+        [ 2.4931807553289667, -0.9312655254971397, -0.40265972375888165 ],
+        [ -0.8295031158210787, 1.7626941211197922, 0.02362508874173958 ],
+        [ 0.03585362578007169, -0.07618895478265217, 0.9570926215180212 ]
     ];
 }
 ```
@@ -1158,6 +1196,18 @@ class dW\Pigmentum\Profile\ProPhoto extends dW\Pigmentum\Profile\RGB {
     ];
 
     const gamma = 1.8;
+
+    protected static array $xyzMatrix = [
+        [ 0.7976749444306044, 0.13519170147409815, 0.031353354095297416 ],
+        [ 0.2880402378623102, 0.7118740972357901, 8.566490189971971E-5 ],
+        [ 0, 0, 0.82521 ]
+    ];
+
+    protected static array $xyzMatrixInverse = [
+        [ 1.3459433009386654, -0.25560750931676696, -0.05111176587088495 ],
+        [ -0.544598869458717, 1.508167317720767, 0.020535141586646915 ],
+        [ 0, 0, 1.2118127506937628 ]
+    ];
 }
 ```
 
@@ -1172,6 +1222,18 @@ class dW\Pigmentum\Profile\Simple_sRGB extends dW\Pigmentum\Profile\RGB {
         [ 0.3000, 0.6000 ],
         [ 0.1500, 0.0600 ]
     ];
+
+    protected static array $xyzMatrix = [
+        [ 0.4124564390896922, 0.357576077643909, 0.18043748326639894 ],
+        [ 0.21267285140562253, 0.715152155287818, 0.07217499330655958 ],
+        [ 0.0193338955823293, 0.11919202588130297, 0.9503040785363679 ]
+    ];
+
+    protected static array $xyzMatrixInverse = [
+        [ 3.2404541621141045, -1.5371385127977166, -0.498531409556016 ],
+        [ -0.9692660305051868, 1.8760108454466942, 0.041556017530349834 ],
+        [ 0.055643430959114726, -0.2040259135167538, 1.0572251882231791 ]
+    ];
 }
 ```
 
@@ -1185,6 +1247,18 @@ class dW\Pigmentum\Profile\Simple_sRGB extends dW\Pigmentum\Profile\RGB {
         [ 0.6400, 0.3300 ],
         [ 0.3000, 0.6000 ],
         [ 0.1500, 0.0600 ]
+    ];
+
+    protected static array $xyzMatrix = [
+        [ 0.4124564390896922, 0.357576077643909, 0.18043748326639894 ],
+        [ 0.21267285140562253, 0.715152155287818, 0.07217499330655958 ],
+        [ 0.0193338955823293, 0.11919202588130297, 0.9503040785363679 ]
+    ];
+
+    protected static array $xyzMatrixInverse = [
+        [ 3.2404541621141045, -1.5371385127977166, -0.498531409556016 ],
+        [ -0.9692660305051868, 1.8760108454466942, 0.041556017530349834 ],
+        [ 0.055643430959114726, -0.2040259135167538, 1.0572251882231791 ]
     ];
 }
 ```

@@ -34,13 +34,13 @@ class Palette {
 
         $swatches = [];
         foreach ($this->colors as $i => $c) {
+            // Yes, 256 seems to be right here ¯\_(ツ)_/¯
             $ch = [
                 round($c->Lab->L * 100) / 256,
                 round($c->Lab->a * 100) / 256,
                 round($c->Lab->b * 100) / 256
             ];
 
-            // Yes, 255 seems to be right here ¯\_(ツ)_/¯
             $chm = [
                 round($c->Lab->L * 100) % 255,
                 round($c->Lab->a * 100) % 255,

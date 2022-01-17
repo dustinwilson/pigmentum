@@ -159,8 +159,7 @@ trait RGB {
                 $xyz = $this->_XYZ;
             }
 
-            $matrix = Math::invert3x3Matrix($profile::getXYZMatrix());
-            $uncompandedVector = Math::multiply3x3MatrixVector([ $xyz->X, $xyz->Y, $xyz->Z ]);
+            $uncompandedVector = Math::multiply3x3MatrixVector($profile::getXYZMatrixInverse(), [ $xyz->X, $xyz->Y, $xyz->Z ]);
 
             $RGB = [
                 $profile::companding($uncompandedVector[0]),

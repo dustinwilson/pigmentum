@@ -10,6 +10,9 @@ use dW\Pigmentum\{
 abstract class RGB extends \dW\Pigmentum\Profile\Profile {
     const gamma = 2.2;
 
+    protected static array $xyzMatrix = [];
+    protected static array $xyzMatrixInverse = [];
+
     // Gamma companding
     public static function companding(float $channel): float {
         return min(max($channel ** (1 / static::gamma), 0), 1);
@@ -20,6 +23,10 @@ abstract class RGB extends \dW\Pigmentum\Profile\Profile {
     }
 
     public static function getXYZMatrix(): array {
+        if (static::$xyzMatrix !== []) {
+            return static::$xyzMatrix;
+        }
+
         $xr = static::chromaticity[0][0];
         $xg = static::chromaticity[1][0];
         $xb = static::chromaticity[2][0];
@@ -50,10 +57,21 @@ abstract class RGB extends \dW\Pigmentum\Profile\Profile {
         $Sg = $SW[1];
         $Sb = $SW[2];
 
-        return [
+        static::$xyzMatrix = [
             [ $Sr * $Xr, $Sg * $Xg, $Sb * $Xb ],
             [ $Sr * $Yr, $Sg * $Yg, $Sb * $Yb ],
             [ $Sr * $Zr, $Sg * $Zg, $Sb * $Zb ],
         ];
+
+        return static::$xyzMatrix;
+    }
+
+    public static function getXYZMatrixInverse(): array {
+        if (static::$xyzMatrixInverse !== []) {
+            return static::$xyzMatrixInverse;
+        }
+
+        static::$xyzMatrixInverse = Math::invert3x3Matrix(self::getXYZMatrix());
+        return static::$xyzMatrixInverse;
     }
 }
