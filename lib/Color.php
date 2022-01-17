@@ -76,8 +76,8 @@ class Color {
 
         $txt = $this->toRGB(self::PROFILE_SRGB);
         $bg = $backgroundColor->toRGB(self::PROFILE_SRGB);
-        $txtY = $sRGBYVector[0] * (($txt->unclampedR / 255) ** $gamma) + $sRGBYVector[1] * (($txt->unclampedG / 255) ** $gamma) + $sRGBYVector[2] * (($txt->unclampedB / 255) ** $gamma);
-        $bgY = $sRGBYVector[0] * (($bg->unclampedR / 255) ** $gamma) + $sRGBYVector[1] * (($bg->unclampedG / 255) ** $gamma) + $sRGBYVector[2] * (($bg->unclampedB / 255) ** $gamma);
+        $txtY = $sRGBYVector[0] * ((abs($txt->unclampedR) / 255) ** $gamma) + $sRGBYVector[1] * ((abs($txt->unclampedG) / 255) ** $gamma) + $sRGBYVector[2] * ((abs($txt->unclampedB) / 255) ** $gamma);
+        $bgY = $sRGBYVector[0] * ((abs($bg->unclampedR) / 255) ** $gamma) + $sRGBYVector[1] * ((abs($bg->unclampedG) / 255) ** $gamma) + $sRGBYVector[2] * ((abs($bg->unclampedB) / 255) ** $gamma);
 
         $txtY = ($txtY > 0.022) ? $txtY : $txtY + ((0.022 - $txtY) ** 1.414);
         $bgY = ($bgY > 0.022) ? $bgY : $bgY + ((0.022 - $bgY) ** 1.414);
