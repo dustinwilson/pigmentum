@@ -159,8 +159,8 @@ trait RGB {
                 $xyz = $this->_XYZ;
             }
 
-            $matrix = $profile::getXYZMatrix()->inverse();
-            $uncompandedVector = $matrix->vectorMultiply(@new Vector([ $xyz->X, $xyz->Y, $xyz->Z ]));
+            $matrix = Math::invert3x3Matrix($profile::getXYZMatrix());
+            $uncompandedVector = Math::multiply3x3MatrixVector([ $xyz->X, $xyz->Y, $xyz->Z ]);
 
             $RGB = [
                 $profile::companding($uncompandedVector[0]),
@@ -266,13 +266,13 @@ trait RGB {
         $g = min(max($g, 0), 255);
         $b = min(max($b, 0), 255);
 
-        $vector = @new Vector([
+        $vector = [
             $profile::inverseCompanding($r / 255),
             $profile::inverseCompanding($g / 255),
             $profile::inverseCompanding($b / 255)
-        ]);
+        ];
 
-        $xyz = ($profile::getXYZMatrix())->vectorMultiply($vector);
+        $xyz = Math::multiply3x3MatrixVector($profile::getXYZMatrix(), $vector);
         $xyz = new ColorSpaceXYZ($xyz[0], $xyz[1], $xyz[2]);
 
         if ($profile::illuminant !== self::REFERENCE_WHITE) {

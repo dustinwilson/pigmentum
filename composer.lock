@@ -4,84 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d8466e6c73515c9be3e52bdedff83caf",
-    "packages": [
-        {
-            "name": "markrogoyski/math-php",
-            "version": "v2.5.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/markrogoyski/math-php.git",
-                "reference": "ca71ca97dc136e7bb9e9e1fe05782f343a5692d4"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/markrogoyski/math-php/zipball/ca71ca97dc136e7bb9e9e1fe05782f343a5692d4",
-                "reference": "ca71ca97dc136e7bb9e9e1fe05782f343a5692d4",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "php": ">=7.2.0"
-            },
-            "require-dev": {
-                "php-coveralls/php-coveralls": "^2.0",
-                "php-parallel-lint/php-parallel-lint": "^1.2",
-                "phploc/phploc": "*",
-                "phpmd/phpmd": "^2.6",
-                "phpstan/phpstan": "*",
-                "phpunit/phpunit": "^8.5",
-                "squizlabs/php_codesniffer": "3.*"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "MathPHP\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Mark Rogoyski",
-                    "email": "mark@rogoyski.com",
-                    "homepage": "https://github.com/markrogoyski",
-                    "role": "Lead developer"
-                },
-                {
-                    "name": "Kevin Nowaczyk",
-                    "homepage": "https://github.com/Beakerboy",
-                    "role": "Developer"
-                },
-                {
-                    "name": "MathPHP Community of Contributors",
-                    "homepage": "https://github.com/markrogoyski/math-php/graphs/contributors"
-                }
-            ],
-            "description": "Math Library for PHP. Features descriptive statistics and regressions; Continuous and discrete probability distributions; Linear algebra with matrices and vectors, Numerical analysis; special mathematical functions; Algebra",
-            "homepage": "https://github.com/markrogoyski/math-php/",
-            "keywords": [
-                "algebra",
-                "combinatorics",
-                "distributions",
-                "linear algebra",
-                "math",
-                "mathematics",
-                "matrix",
-                "numerical analysis",
-                "probability",
-                "regressions",
-                "statistics"
-            ],
-            "support": {
-                "issues": "https://github.com/markrogoyski/math-php/issues",
-                "source": "https://github.com/markrogoyski/math-php/tree/v2.5.0"
-            },
-            "time": "2021-11-22T05:14:07+00:00"
-        }
-    ],
+    "content-hash": "1f939c87144ca2d124a0aa37d128c7cd",
+    "packages": [],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
@@ -89,7 +13,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.4.0",
+        "php": "^8.0.2",
         "ext-dom": "*",
         "ext-zip": "*",
         "ext-mbstring": "*"

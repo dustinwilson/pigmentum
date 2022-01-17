@@ -1,10 +1,11 @@
 <?php
 declare(strict_types=1);
 namespace dW\Pigmentum\Profile;
-use dW\Pigmentum\Color as Color;
-use MathPHP\LinearAlgebra\MatrixFactory as MatrixFactory;
-use MathPHP\LinearAlgebra\Matrix as Matrix;
-use MathPHP\LinearAlgebra\Vector as Vector;
+use dW\Pigmentum\{
+    Color,
+    Math
+};
+
 
 abstract class RGB extends \dW\Pigmentum\Profile\Profile {
     const gamma = 2.2;
@@ -18,7 +19,7 @@ abstract class RGB extends \dW\Pigmentum\Profile\Profile {
         return min(max($channel ** static::gamma, 0), 1);
     }
 
-    public static function getXYZMatrix(): Matrix {
+    public static function getXYZMatrix(): array {
         $xr = static::chromaticity[0][0];
         $xg = static::chromaticity[1][0];
         $xb = static::chromaticity[2][0];
@@ -38,23 +39,21 @@ abstract class RGB extends \dW\Pigmentum\Profile\Profile {
         $Yb = 1;
         $Zb = (1 - $xb - $yb) / $yb;
 
-        $S = (@MatrixFactory::create([
+        $S = Math::invert3x3Matrix([
             [ $Xr, $Xg, $Xb ],
             [ $Yr, $Yg, $Yb ],
             [ $Zr, $Zg, $Zb ]
-        ]))->inverse();
+        ]);
 
-        $W = @new Vector(static::illuminant);
-        $SW = $S->multiply($W);
+        $SW = Math::multiply3x3MatrixVector($S, static::illuminant);
+        $Sr = $SW[0];
+        $Sg = $SW[1];
+        $Sb = $SW[2];
 
-        $Sr = $SW->getRow(0)[0];
-        $Sg = $SW->getRow(1)[0];
-        $Sb = $SW->getRow(2)[0];
-
-        return @MatrixFactory::create([
+        return [
             [ $Sr * $Xr, $Sg * $Xg, $Sb * $Xb ],
             [ $Sr * $Yr, $Sg * $Yg, $Sb * $Yb ],
             [ $Sr * $Zr, $Sg * $Zg, $Sb * $Zb ],
-        ]);
+        ];
     }
 }

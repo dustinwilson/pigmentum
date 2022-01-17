@@ -2,8 +2,7 @@
 declare(strict_types=1);
 namespace dW\Pigmentum\ColorSpace;
 use dW\Pigmentum\ColorSpace\XYZ\LMS as ColorSpaceLMS;
-use MathPHP\LinearAlgebra\MatrixFactory as MatrixFactory;
-use MathPHP\LinearAlgebra\Matrix as Matrix;
+use dW\Pigmentum\Math;
 
 
 class XYZ extends ColorSpace implements \Stringable {
@@ -14,10 +13,31 @@ class XYZ extends ColorSpace implements \Stringable {
     protected ?ColorSpaceLMS $_LMS = null;
 
     const BRADFORD = [
-        [ 0.8951000, 0.2664000, -0.1614000 ],
-        [ -0.7502000, 1.7135000, 0.0367000 ],
-        [ 0.0389000, -0.0685000, 1.0296000 ]
+        [ 0.8951, 0.2664, -0.1614 ],
+        [ -0.7502, 1.7135, 0.0367 ],
+        [ 0.0389, -0.0685, 1.0296 ]
     ];
+
+    const BRADFORD_INVERSE = array (
+    0 =>
+    array (
+      0 => 0.9869929054667121,
+      1 => -0.14705425642099013,
+      2 => 0.15996265166373122,
+    ),
+    1 =>
+    array (
+      0 => 0.4323052697233945,
+      1 => 0.5183602715367774,
+      2 => 0.049291228212855594,
+    ),
+    2 =>
+    array (
+      0 => -0.008528664575177328,
+      1 => 0.04004282165408486,
+      2 => 0.96848669578755,
+    ),
+  );
 
 
     public function __construct(float $X, float $Y, float $Z) {
@@ -52,19 +72,15 @@ class XYZ extends ColorSpace implements \Stringable {
         $new = (new XYZ($new[0], $new[1], $new[2]))->LMS;
         $old = (new XYZ($old[0], $old[1], $old[2]))->LMS;
 
-        $mir = @MatrixFactory::create([
+        $mir = [
             [ $new->rho / $old->rho, 0, 0 ],
             [ 0, $new->gamma / $old->gamma, 0 ],
             [ 0, 0, $new->beta / $old->beta ]
-        ]);
+        ];
 
-        $bradford = @MatrixFactory::create(self::BRADFORD);
-
-        $m1 = $bradford->inverse()->multiply($mir);
-        $m2 = $m1->multiply($bradford);
-        $xyz = $m2->multiply(@MatrixFactory::create([ [$this->_X], [$this->_Y], [$this->_Z] ]));
-
-        return new XYZ($xyz[0][0], $xyz[1][0], $xyz[2][0]);
+        $m1 = Math::multiply3x3Matrix(self::BRADFORD_INVERSE, $mir);
+        $m2 = Math::multiply3x3Matrix($m1, self::BRADFORD);
+        return new XYZ(...Math::multiply3x3MatrixVector($m2, [ $this->_X, $this->_Y, $this->_Z ]));
     }
 
 
