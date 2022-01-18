@@ -101,6 +101,51 @@ class Palette {
         return true;
     }
 
+    // Outputs Adobe Photoshop's ACT 256 color palette format
+    public function saveACT(): string {
+        $colorsCount = count($this->colors);
+        if ($colorsCount === 0) {
+            throw new \Exception("There must be a color in the palette to be able to save as a palette file format.\n");
+        } elseif ($colorsCount > 256) {
+            $trace = debug_backtrace();
+            trigger_error("Photoshop's ACT format can only have up to 256 colors; truncating in {$trace[0]['file']} on line {$trace[0]['line']}", E_USER_WARNING);
+            $colors = array_slice($this->colors, 0, 256);
+        } else {
+            $colors = $this->colors;
+        }
+
+        $output = '';
+
+        foreach ($colors as $c) {
+            $output .= pack('C*', $c->RGB->R, $c->RGB->G, $c->RGB->B);
+        }
+
+        if ($colorsCount < 256) {
+            $stop = 256 - $colorsCount;
+            for ($i = 0; $i < $stop; $i++) {
+                $output .= pack('x3');
+            }
+
+            $output .= pack('xC3', $colorsCount, 255, 255);
+        }
+
+        return $output;
+    }
+
+    // Outputs to Adobe Photoshop's ACT format
+    public function saveACTFile(string $filename): bool {
+        $dirname = dirname($filename);
+        if (!is_dir($dirname)) {
+            throw new \Exception("Directory \"$dirname\" does not exist.\n");
+        }
+        if (!is_writable($dirname)) {
+            throw new \Exception("Directory \"$dirname\" is not writable.\n");
+        }
+
+        file_put_contents($filename, $this->saveACT());
+        return true;
+    }
+
     // Outputs to ArtRage's COL format
     public function saveCOL(): string {
         if (count($this->colors) === 0) {
