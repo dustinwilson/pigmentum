@@ -20,16 +20,16 @@ trait RGB {
     public static function withRGBHex(string $hex, ?string $name = null, ?string $profile = null): Color {
         $profile = ColorSpaceRGB::validateProfile($profile);
 
-        if (strpos($hex, '#') !== 0) {
-            $hex = "#$hex";
+        if (strpos($hex, '#') === 0) {
+            $hex = substr($hex, 1);
         }
 
-        if (strlen($hex) !== 7) {
+        if (strlen($hex) !== 6) {
             throw new \Exception(sprintf('"%s" is an invalid 8-bit RGB hex string', $hex));
         }
 
-        list($r, $g, $b) = sscanf($hex, "#%02x%02x%02x");
-        return self::_withRGB($r, $g, $b, $name, $profile, $hex);
+        $dec = hexdec($hex);
+        return self::_withRGB(($dec & 0xFF0000) >> 16, ($dec & 0x00FF00) >> 8, $dec & 0x0000FF, $name, $profile, $hex);
     }
 
     public static function withHSB(float $H, float $S, float $B, ?string $name = null, ?string $profile = null): Color {
